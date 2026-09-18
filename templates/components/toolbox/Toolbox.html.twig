@@ -1,0 +1,83 @@
+<div{{ attributes }}>
+    <style>
+        .toolbox-header .toolbox-action {
+            text-decoration: none;
+            color: inherit;
+            padding: 0;
+        }
+        .dropdown-menu {
+            --bs-dropdown-padding-y: 0.2rem;
+        }
+    </style>
+
+    {% set referenceObject =  {
+        'resourceID' : resourceID,
+        'resourceName' : resourceName,
+        'resourceType' : resourceType
+    }
+    %}
+
+    <div class="toolbox-header p-2 pt-3 d-flex justify-content-between">
+        <div class="row g-2">
+            <div class="col-auto">
+                {{ component('Toolbox:UploadAttachment', {
+                    resourceID: resourceID,
+                    resourceName: resourceName,
+                    resourceType: resourceType,
+                    section: section,
+                    id: 'upload-attachment-component'
+                }) }}
+            </div>
+            <div class="col-auto">
+                {{ component('Toolbox:AddNote', {
+                    resourceID: resourceID,
+                    resourceName: resourceName,
+                    resourceType: resourceType,
+                    section: section,
+                    id: 'add-note-component'
+                }) }}
+            </div>
+            <div class="col-auto">
+                {{ component('Toolbox:PlanActivity', {
+                    resourceID: resourceID,
+                    resourceName: resourceName,
+                    resourceType: resourceType,
+                    section: section,
+                    id: 'plan-activity-component'
+                }) }}
+            </div>
+            <div class="col-auto">
+                {{ component('Toolbox:AddBookmark', {
+                    class: 'btn btn-link toolbox-action',
+                    resourceID: resourceID,
+                    resourceName: resourceName,
+                    resourceType: resourceType,
+                    section: section,
+                    id: 'add-bookmark-component'
+                }) }}
+            </div>
+        </div>
+        <div>
+            <div role="button">
+                {{ component('Toolbox:Followers', {
+                    resourceID: resourceID,
+                    resourceName: resourceName,
+                    resourceType: resourceType,
+                    class: 'd-flex',
+                    section: section,
+                    id: 'followers-component'
+                }) }}
+            </div>
+        </div>
+    </div>
+
+    {{ component('Toolbox:PlannedActivities', { resourceID: resourceID, resourceName: resourceName, resourceType: resourceType, section: section, id: 'planned-activities-component' }) }}
+    {{ component('Toolbox:AttachmentList', { resourceID: resourceID, resourceName: resourceName, resourceType: resourceType, section: section, id: 'attachment-list-component' }) }}
+    {{ component('Toolbox:Timeline', {
+        resourceID: resourceID,
+        resourceName: resourceName,
+        resourceType: resourceType,
+        section: section,
+        id: 'timeline-component'
+    }) }}
+</div>

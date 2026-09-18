@@ -1,0 +1,14 @@
+<div {{ attributes }}>
+    {% set referenceObject =  {
+        'resourceID' : this.resourceID,
+        'resourceName' : this.resourceName,
+        'resourceType' : this.resourceType
+    } %}
+        <button
+                role="button" class="btn btn-link toolbox-action"
+                data-action="live#action"
+                data-live-action-param="addBookmark()"
+        >
+                {{ ux_icon('bookmark-plus', { class: 'me-1' }) }} Bookmark
+        </button>
+</div>

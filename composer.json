@@ -1,0 +1,74 @@
+{
+    "name": "webdevelovers/resource-bundle",
+    "description": "Bundle that treats Doctrine entities as 'Resources' to handle CRUD-oriented ERP applications",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "keywords" : [],
+    "require": {
+        "php": "^8.4",
+        "doctrine/inflector": "^2.1",
+        "doctrine/orm": "^3.7",
+        "symfony/config": "^7.4|^8.0",
+        "symfony/dependency-injection": "^7.4|^8.0",
+        "symfony/form": "^7.4|^8.0",
+        "symfony/framework-bundle": "^7.4|^8.0",
+        "symfony/http-kernel": "^7.4|^8.0",
+        "symfony/messenger": "^8.1",
+        "symfony/orm-pack": "^2.7",
+        "symfony/property-access": "^7.4|^8.0",
+        "symfony/routing": "^8.1",
+        "symfony/security-core": "^7.4|^8.0",
+        "symfony/security-csrf": "^7.4|^8.0",
+        "symfony/translation-contracts": "^3.7",
+        "symfony/uid": "^8.1",
+        "symfony/ux-live-component": "^3.4",
+        "symfony/ux-twig-component": "^3.4",
+        "symfony/validator": "^8.1",
+        "symfony/yaml": "^7.4|^8.0",
+        "twig/twig": "^3.28",
+        "webdevelovers/resource-models": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.4",
+        "rector/rector": "^2.0",
+        "solido/php-coding-standards": "dev-master"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/webdevelovers/resource-models.git"
+        }
+    ],
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "WebDevelovers\\ResourceBundle\\": "./src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "WebDevelovers\\ResourceBundle\\Tests\\": "./tests"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --colors=always",
+        "test-coverage": "phpunit --coverage-text",
+        "phpstan": "phpstan analyse src/ -c phpstan.neon --level=8 --no-progress -vvv --memory-limit=2048M",
+        "cscheck": "phpcs --standard=phpcs.xml src/",
+        "csfix": "phpcbf --standard=phpcs.xml src/"
+    },
+    "license" : "GPL-2.0-or-later",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Simone Bernini",
+            "email": "simone@webdevelovers.org"
+        }
+    ]
+}

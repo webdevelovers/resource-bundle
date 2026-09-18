@@ -1,0 +1,184 @@
+{% macro default(url, label, icon, class = [], id = null, extraAttrs = []) %}
+    {% import '@WebDeveloversResource/macro/icons.html.twig' as icons %}
+
+    <a role="button"
+        {% set classes = ['btn']|merge(class) %}
+        class="{{ classes|join(' ') }}"
+        {% if id is not null %} id="{{ id }}"{% endif %}
+        href="{% if url is not empty %}{{ url }}{% else %}#{% endif %}"
+        {% for key, value in extraAttrs %} {{ key }}="{{ value }}"{% endfor %}>
+
+        {% if icon is not empty %}
+            <twig:ux:icon name="{{ icon }}" class="fs-xl me-1" />
+        {% endif %}
+        {% if label is not empty %}
+            {{ label|trans|capitalize }}
+        {% endif %}
+    </a>
+{% endmacro %}
+
+{% macro create(
+    url,
+    label,
+    icon,
+    color,
+    extraClass,
+    id,
+    extraAttrs
+) %}
+    {% import _self as buttons %}
+
+    {% set class = extraClass is not empty ?
+        ['btn-' ~ color, 'text-nowrap create-button', extraClass] :
+        ['btn-' ~ color, 'text-nowrap create-button']
+    %}
+    {% set label = label is empty and label is not null ? null : label|default('wd.action.create') %}
+    {% set icon = icon is empty and icon is not null ? null : icon|default('plus') %}
+
+    {{ buttons.default(url, label, icon, class, id, extraAttrs) }}
+{% endmacro %}
+
+{% macro show(
+    url,
+    label,
+    icon,
+    color,
+    extraClass,
+    id,
+    extraAttrs
+) %}
+    {% import _self as buttons %}
+
+    {% set class = extraClass is not empty ?
+        ['btn-' ~ color, 'show-button', extraClass] :
+        ['btn-' ~ color, 'show-button']
+    %}
+    {% set label = label is empty and label is not null ? null : label|default('wd.action.show') %}
+    {% set icon = icon is empty and icon is not null ? null : icon|default('eye') %}
+
+    {{ buttons.default(url, label, icon, class, id, extraAttrs) }}
+{% endmacro %}
+
+{% macro edit(
+    url,
+    label,
+    icon,
+    color,
+    extraClass,
+    id,
+    extraAttrs
+) %}
+    {% import _self as buttons %}
+
+    {% set class = extraClass is not empty ?
+        ['btn-' ~ color, 'edit-button', extraClass] :
+        ['btn-' ~ color, 'edit-button']
+    %}
+    {% set label = label is empty and label is not null ? null : label|default('wd.action.edit') %}
+    {% set icon = icon is empty and icon is not null ? null : icon|default('tabler:pencil') %}
+    {{ buttons.default(url, label, icon, class, id, extraAttrs) }}
+{% endmacro %}
+
+{% macro cancel(
+    url,
+    label,
+    icon,
+    color,
+    extraClass,
+    id,
+    extraAttrs
+) %}
+    {% import _self as buttons %}
+
+    {% set class = extraClass is not empty ?
+        ['btn-' ~ color, 'cancel-button', extraClass] :
+        ['btn-' ~ color, 'cancel-button']
+    %}
+    {% set label = label is empty and label is not null ? null : label|default('wd.action.cancel') %}
+    {% set icon = icon is empty and icon is not null ? null : icon|default('tabler:x') %}
+
+    {{ buttons.default(url, label, icon, class, id, extraAttrs) }}
+{% endmacro %}
+
+{% macro submit(
+    label,
+    icon,
+    color,
+    extraClass,
+    method,
+    id,
+    formID = null,
+    extraAttrs
+) %}
+    {% import _self as buttons %}
+    {% import '@WebDeveloversResource/macro/icons.html.twig' as icons %}
+
+    {% set class = extraClass is not empty ?
+        ['btn-' ~ color, 'submit-button', extraClass] :
+        ['btn-' ~ color, 'submit-button']
+    %}
+    {% set label = label is empty and label is not null ? null : label|default('wd.action.submit') %}
+    {% set icon = icon is empty and icon is not null ? null : icon|default('plus') %}
+    {% set classes = ['btn']|merge(class) %}
+    {% set method = method|default('post') %}
+
+    <button
+            class="{{ classes|join(' ') }}"
+            type="submit"
+            {% if method is not same as 'post' %} formmethod="{{ method }}"{% endif %}
+            {% if formID is not empty %} form="{{ formID }}"{% endif %}
+            {% for key, value in extraAttrs %} {{ key }}="{{ value }}"{% endfor %}
+    >
+        {% if icon is not empty %}
+            {{ icons.base(icon, 'me-1') }}
+        {% endif %}
+        {% if label %}{{ label|trans|capitalize }}{% endif %}
+    </button>
+{% endmacro %}
+
+{% macro delete(url, message, labeled = true, resourceId = null, extra_class = '', confirm = false) %}
+    {% import '@WebDeveloversResource/macro/icons.html.twig' as icons %}
+
+    <form action="{{ url }}" method="post" class="btn-group">
+        <input type="hidden" name="_method" value="DELETE">
+        <button class="btn btn-danger d-flex align-items-center {{ extra_class }} delete-button rounded-end" type="submit"
+                data-requires-confirmation
+                data-id="{{ resourceId }}"
+                {% if confirm %}
+                    onclick="return confirm('{{ (confirm is same as(true) ? 'wd.ui.confirm_delete' : confirm)|trans }}')"
+                {% endif %}
+        >
+            {{ icons.delete('me-1') }} <span>{{ ((message is empty and labeled) ? 'wd.action.delete' : message)|trans|capitalize }}</span>
+        </button>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token(resourceId) }}" />
+    </form>
+{% endmacro %}
+
+{% macro bulkDelete(url, message, labeled = true, size_class = '') %}
+    {% import '@WebDeveloversResource/macro/icons.html.twig' as icons %}
+
+    <form action="{{ url }}" method="post">
+        <input type="hidden" name="_method" value="DELETE">
+        <button class="btn btn-danger {{ size_class }} bulk-delete-action" type="submit" data-bulk-action-requires-confirmation disabled>
+            {{ icons.delete() }} {{ ((message is empty and labeled) ? 'wd.action.delete' : message)|trans }}
+        </button>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('bulk_delete') }}" />
+    </form>
+{% endmacro %}
+
+{% macro filter(message, size_class = '') %}
+    {% import '@WebDeveloversResource/macro/icons.html.twig' as icons %}
+
+    <button class="btn btn-primary {{ size_class }}" type="submit">
+        {{ icons.filter() }} {{ (message is empty ? 'wd.ui.filter' : message)|trans }}
+    </button>
+{% endmacro %}
+
+{% macro resetFilters(url, message, size_class = '') %}
+    {% import '@WebDeveloversResource/macro/icons.html.twig' as icons %}
+
+    <a class="btn btn-primary {{ size_class }}" href="{{ url }}">
+        {{ icons.x() }} {{ (message is empty ? 'wd.ui.clear_filters' : message)|trans }}
+    </a>
+{% endmacro %}

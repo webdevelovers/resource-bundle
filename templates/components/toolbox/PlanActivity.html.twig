@@ -1,0 +1,66 @@
+<div {{ attributes }} id="plan-activity-component">
+    {% set referenceObject =  {
+        'resourceID' : this.resourceID,
+        'resourceName' : this.resourceName,
+        'resourceType' : this.resourceType
+    } %}
+    <style>
+        #planActivityOffcanvas {
+            --theme-offcanvas-width: 640px;
+        }
+    </style>
+    <button class="btn btn-link text-black text-decoration-none p-0 toolbox-action" data-bs-toggle="offcanvas" role="button" aria-controls="planActivityOffcanvas">
+        {{ ux_icon('bi:calendar-plus', { class: 'me-1' }) }} Pianifica Attività
+    </button>
+
+    <div
+            class="offcanvas offcanvas-end"
+            tabindex="-1"
+            id="planActivityOffcanvas"
+            aria-labelledby="planActivityOffcanvasLabel"
+            data-action="hidden.bs.offcanvas->live#action"
+            data-live-action-param="resetDraft"
+    >
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="planActivityOffcanvas">Pianifica attività</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="row">
+                <div class="col-12">
+                    {{ form_start(form, {
+                        attr: {
+                            novalidate: 'novalidate',
+                            'data-model': '*',
+                            'data-action': 'live#action:prevent',
+                            'data-live-action-param': 'save',
+                        },
+                    }) }}
+                    <div class="row">
+                        <div class="col-md-6 col-12">
+                            {{ form_row(form.summary) }}
+                        </div>
+                        <div class="col-md-6 col-12">
+                            {{ form_row(form.activityType) }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-12">
+                            {{ form_row(form.dueDate, { label_attr: { class: 'pt-0 pb-0' } }) }}
+                        </div>
+                        <div class="col-md-6 col-12">
+                            {{ form_row(form.assignedTo) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            {{ form_row(form.description) }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">{{ 'wd.resource.common.action.add'|trans|capitalize }}</button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

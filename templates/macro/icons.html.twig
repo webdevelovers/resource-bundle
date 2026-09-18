@@ -1,0 +1,108 @@
+{% macro base(iconClass, extraClass = '') %}
+    <twig:ux:icon name="{{ iconClass }}" class="{{ extraClass }}"/>
+{% endmacro %}
+
+{% macro success(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:check', extraClass) }}
+{% endmacro %}
+
+{% macro warning(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:shield-alert', extraClass) }}
+{% endmacro %}
+
+{% macro danger(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:triangle-alert', extraClass) }}
+{% endmacro %}
+
+{% macro info(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:circle-alert', extraClass) }}
+{% endmacro %}
+
+{% macro check(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:check', extraClass) }}
+{% endmacro %}
+
+{% macro x(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:x', extraClass) }}
+{% endmacro %}
+
+{% macro create(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:plus', extraClass) }}
+{% endmacro %}
+
+{% macro show(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:eye', extraClass) }}
+{% endmacro %}
+
+{% macro edit(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:pencil', extraClass) }}
+{% endmacro %}
+
+{% macro delete(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:trash-2', extraClass) }}
+{% endmacro %}
+
+{% macro trash(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:trash-2', extraClass) }}
+{% endmacro %}
+
+{% macro filter(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:list-filter', extraClass) }}
+{% endmacro %}
+
+{% macro fullscreen(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:fullscreen', extraClass) }}
+{% endmacro %}
+
+{% macro bell(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:bell', extraClass) }}
+{% endmacro %}
+
+{% macro upload(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:upload', extraClass) }}
+{% endmacro %}
+
+{% macro journal(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:book', extraClass) }}
+{% endmacro %}
+
+{% macro addBookmark(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:bookmark-plus', extraClass) }}
+{% endmacro %}
+
+{% macro download(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:download', extraClass) }}
+{% endmacro %}
+
+{% macro personCircle(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:circle-user', extraClass) }}
+{% endmacro %}
+
+{% macro personUp(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:user-plus', extraClass) }}
+{% endmacro %}
+
+{% macro calendarEvent(extraClass) %}
+    {% import _self as icons %}
+    {{ icons.base('lucide:calendar', extraClass) }}
+{% endmacro %}

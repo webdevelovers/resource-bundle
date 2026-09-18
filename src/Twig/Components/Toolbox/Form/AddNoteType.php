@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace WebDevelovers\ResourceBundle\Twig\Components\Toolbox\Form;
+
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+use WebDevelovers\ResourceBundle\Twig\Components\Toolbox\Model\AddNote;
+
+class AddNoteType extends AbstractType
+{
+    /** @param array<string,mixed> $options */
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('note', TextareaType::class, [
+                'required' => false,
+                'label_attr' => ['class' => 'text-capitalize'],
+                'label' => 'Nota',
+            ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => AddNote::class,
+        ]);
+    }
+}

@@ -1,0 +1,44 @@
+<div {{ attributes }}>
+    {% set referenceObject =  {
+        'resourceID' : this.resourceID,
+        'resourceName' : this.resourceName,
+        'resourceType' : this.resourceType
+    } %}
+    <button data-bs-toggle="offcanvas" role="button" class="btn btn-link toolbox-action" aria-controls="attachmentUploadOffcanvas">
+        {{ ux_icon('upload', { class: 'me-1' }) }} Allegato
+    </button>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="attachmentUploadOffcanvas" aria-labelledby="attachmentUploadOffcanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="attachmentUploadOffcanvas">Aggiungi Allegato</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            {% for message in app.flashes('dropzone_success') %}
+                <div class="alert alert-success" data-turbo-cache="false">{{ message }}</div>
+            {% endfor %}
+
+            {% if this.uploadedFilesCount > 0 %}
+                <div class="alert alert-success" role="alert">
+                    {{ 'wd.resource.toolbox.attachments.upload_success'|trans({'%count%': this.uploadedFilesCount}) }}
+                </div>
+            {% endif %}
+
+            {% if this.uploadErrors is not empty %}
+                <div class="alert alert-danger" role="alert">
+                    <ul class="mb-0 ps-3">
+                        {% for error in this.uploadErrors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <input type="file" name="files[]" class="form-control" multiple/>
+            <button
+                    class="btn btn-primary mt-4"
+                    data-action="live#action"
+                    data-live-action-param="files|save">Upload!</button>
+        </div>
+    </div>
+</div>

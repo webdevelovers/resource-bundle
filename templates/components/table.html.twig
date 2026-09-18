@@ -1,0 +1,391 @@
+<div {{ attributes }}>
+    {% set result = this.result %}
+    {% set indexView = this.indexView %}
+    {% set definition = this.definition %}
+    {% set hasItemActions = this.hasItemActions %}
+    {% set bulkActions = this.bulkActions %}
+    {% set resourceName = this.routeNamePrefix %}
+    {% if resourceName is null or resourceName == '' %}
+        {% set resourceName = this.resourceAlias|split('.')|last %}
+    {% endif %}
+
+    <div class="card my-2">
+        <div class="card-header justify-content-between">
+            <div class="col-12 col-lg-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    {% if this.hasCreateRoute %}
+                        <div class="btn-group" role="group" aria-label="{{ 'wd.resource.index.aria.actions'|trans }}">
+                            <a
+                                role="button"
+                                class="btn btn-success text-nowrap"
+                                href="{{ this.createRoute }}"
+                            >
+                                {{ ux_icon('tabler:plus', { class: 'me-1 fs-xl' }) }}
+                                {{ 'wd.resource.common.action.create'|trans|capitalize }}
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    <div class="d-flex flex-column ms-1">
+                        <div class="h5 mb-0">{{ this.titleLabel|trans|capitalize }}</div>
+                    </div>
+                </div>
+            </div>
+
+            {#
+            <div class="col-12 col-lg-5">
+                <div
+                    class="card card-body p-2 mb-0"
+                    data-controller="resource-index-filters"
+                    data-resource-index-filters-definitions-value="{{ filterDefinitions|json_encode|e('html_attr') }}"
+                    data-resource-index-filters-draft-version-value="{{ this.draftVersion }}"
+                >
+                    <div class="d-flex flex-wrap gap-2 align-items-end">
+                        <div class="flex-grow-1">
+                            <select
+                                class="form-select"
+                                data-resource-index-filters-target="field"
+                                data-action="change->resource-index-filters#onFieldChange"
+                                data-model="draftField"
+                            >
+                                <option value="">-- seleziona filtro --</option>
+                                {% for filter in definition.filters %}
+                                    <option value="{{ filter.name }}">{{ filter.label ?? filter.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div style="min-width: 140px;">
+                            <select
+                                class="form-select"
+                                data-resource-index-filters-target="operator"
+                                data-model="draftOperator"
+                            >
+                                <option value="contains">Contiene</option>
+                                <option value="equals">Uguale</option>
+                                <option value="not_equals">Diverso</option>
+                                <option value="gte">Da</option>
+                                <option value="lte">A</option>
+                                <option value="in">In</option>
+                            </select>
+                        </div>
+
+                        <div class="flex-grow-1">
+                                <div
+                                    data-resource-index-filters-target="valueContainer"
+                                    data-action="keydown->resource-index-filters#onValueKeydown"
+                                ></div>
+                                <input type="hidden" data-model="draftValue">
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-primary"
+                                    data-resource-index-filters-target="addButton"
+                                    data-action="live#action"
+                                    data-live-action-param="addCriterion"
+                            >
+                                Cerca
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary"
+                                data-action="live#action"
+                                data-live-action-param="resetCriteria"
+                            >
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+                    {% if this.criteria is not empty %}
+                        <div class="mt-1 d-flex flex-wrap gap-2">
+                            {% for criterion in this.criteria %}
+                                {% set currentFilter = definition.filters[criterion.field] ?? null %}
+                                {% set isBooleanCriterion = currentFilter is not null and currentFilter.type == 'boolean' %}
+                                <span class="badge text-bg-primary d-inline-flex align-items-center gap-2">
+                                <span>
+                                    {% if isBooleanCriterion %}
+                                        {% set fieldLabel = currentFilter.label ?? criterion.field %}
+                                        {% set operatorLabel = criterion.operator == 'not_equals' ? 'non è' : 'è' %}
+                                        {% set booleanLabel =
+                                            (criterion.value is same as(true) or criterion.value == '1')
+                                            ? 'Sì'
+                                            : ((criterion.value is same as(false) or criterion.value == '0') ? 'No' : '—')
+                                        %}
+                                        {{ fieldLabel }} {{ operatorLabel }} {{ booleanLabel }}
+                                    {% else %}
+                                        {% set fieldName = 'wd.resource.' ~ resourceName ~ '.field.' ~ criterion.field %}
+                                        {% set operatorName = 'wd.index.' ~ criterion.operator %}
+                                        {% set criterionValue = criterion.display_value ?? criterion.value %}
+                                        {% set displayValue = criterionValue %}
+                                        {% if criterionValue is iterable is same as(false) and (criterionValue matches '/^\\{.*\\}$/' or criterionValue matches '/^\\[.*\\]$/') %}
+                                            {% set decoded = criterionValue|json_decode %}
+                                            {% if decoded.label is defined %}
+                                                {% set displayValue = decoded.label is iterable ? decoded.label|join(', ') : decoded.label %}
+                                            {% elseif decoded.value is defined %}
+                                                {% set displayValue = decoded.value is iterable ? decoded.value|join(', ') : decoded.value %}
+                                            {% endif %}
+                                        {% endif %}
+                                        {{ fieldName|trans|capitalize }} {{ operatorName|trans }} "{{ displayValue is same as(true) ? 'true' : displayValue is same as(false) ? 'false' : displayValue }}"
+                                    {% endif %}
+                                </span>
+                                <button
+                                    type="button"
+                                    class="btn-close btn-close-white"
+                                    aria-label="Rimuovi filtro"
+                                    data-action="live#action"
+                                    data-live-action-param="removeCriterion"
+                                    data-live-index-param="{{ loop.index0 }}"
+                                ></button>
+                            </span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            #}
+            <div class="col-12 col-lg-4">
+                <div class="d-flex justify-content-lg-end align-items-center gap-3 flex-wrap">
+                    <div class="d-flex align-items-center gap-1 text-nowrap">
+                        <div class="d-flex align-items-center gap-1">
+                            <input
+                                type="number"
+                                min="1"
+                                max="{{ result.totalItems > 0 ? result.totalItems : 1 }}"
+                                class="form-control form-control-sm text-center px-0"
+                                value="{{ this.firstItemInput }}"
+                                data-model="on(change)|firstItemInput"
+                            >
+
+                            <span>-</span>
+
+                            <input
+                                type="number"
+                                min="{{ this.firstItem }}"
+                                max="{{ result.totalItems > 0 ? result.totalItems : 1 }}"
+                                class="form-control form-control-sm text-center px-0"
+                                value="{{ this.lastItemInput }}"
+                                data-model="on(change)|lastItemInput"
+                            >
+
+                            <span>/</span>
+
+                            <span class="fw-semibold">{{ result.totalItems }}</span>
+                        </div>
+                    </div>
+
+                    <div class="btn-group d-flex gap-1" role="group" aria-label="{{ 'wd.resource.index.aria.pagination_prev_next'|trans }}">
+                        <button
+                            type="button"
+                            class="btn btn-light px-2"
+                            data-action="live#action"
+                            data-live-action-param="previousPage"
+                            {% if not this.hasPreviousPage %}disabled{% endif %}
+                        >
+                            {{ ux_icon('tabler:chevron-left', { class: 'fs-xl' }) }}
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-light px-2"
+                            data-action="live#action"
+                            data-live-action-param="nextPage"
+                            {% if not this.hasNextPage %}disabled{% endif %}
+                        >
+                            {{ ux_icon('tabler:chevron-right', { class: 'fs-xl' }) }}
+                        </button>
+                    </div>
+
+                    <div class="btn-group" role="group" aria-label="{{ 'wd.resource.index.aria.views'|trans }}">
+                        <button
+                            type="button"
+                            class="btn {{ this.view == 'table' ? 'btn-primary' : 'btn-outline-secondary' }}"
+                            disabled
+                        >
+                            {{ ux_icon('tabler:table', { class: 'fs-xl' }) }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover wd-table">
+                    <thead>
+                    <tr>
+                        {% if bulkActions is not empty %}
+                            <th style="width: 1%">
+                                <div class="form-check">
+                                    <input
+                                        type="checkbox"
+                                        class="form-check-input bulk-select-checkbox"
+                                        data-action="live#action"
+                                        data-live-action-param="toggleAll"
+                                        {% set pageIsFullySelected = result.items is not empty %}
+                                        {% for item in result.items %}
+                                            {% if not this.isIdSelected(item.id) %}{% set pageIsFullySelected = false %}{% endif %}
+                                        {% endfor %}
+                                        {% if pageIsFullySelected %}checked{% endif %}
+                                    >
+                                </div>
+                            </th>
+                        {% endif %}
+                        {% for name, field in indexView.fields %}
+                            {% set alignClass = field.align is defined and field.align in ['start', 'center', 'end'] ? 'text-' ~ field.align : '' %}
+                            {% set fieldTranslationKey = 'wd.resource.' ~ resourceName ~ '.field.' ~ name %}
+                            {% set fieldHeaderLabel = fieldTranslationKey|trans %}
+                            <th class="{{ [alignClass, field.header_class|default('')]|join(' ')|trim }}">
+                            {% if this.isSortable(name) %}
+                                {% set direction = this.getSortDirectionFor(name) %}
+                                <button
+                                    type="button"
+                                    class="btn btn-link p-0 text-decoration-none text-reset"
+                                    data-action="live#action"
+                                    data-live-action-param="toggleSort"
+                                    data-live-field-param="{{ name }}"
+                                >
+                                    {{ fieldHeaderLabel|capitalize }}
+                                    {% if direction == 'asc' %}
+                                        {{ ux_icon('tabler:sort-ascending', { class: 'ms-1' }) }}
+                                    {% elseif direction == 'desc' %}
+                                        {{ ux_icon('tabler:sort-descending', { class: 'ms-1' }) }}
+                                    {% else %}
+                                        {{ ux_icon('tabler:arrows-sort', { class: 'ms-1 opacity-50' }) }}
+                                    {% endif %}
+                                </button>
+                            {% else %}
+                                {{ fieldHeaderLabel|capitalize }}
+                            {% endif %}
+                        </th>
+                    {% endfor %}
+                    {% if hasItemActions %}
+                        <th class="text-end" style="width: 1%">{{ 'wd.resource.index.actions_header'|trans|capitalize }}</th>
+                    {% endif %}
+                </tr>
+                </thead>
+                <tbody>
+                {% set selectedIdsList = this.getSelectedIdsList() %}
+                {% if this.selectedCount > 0 %}
+                    <tr class="table-info">
+                        <td colspan="{{ indexView.fields|length + (hasItemActions ? 1 : 0) + (bulkActions is not empty ? 1 : 0) }}">
+                            <div class="d-flex align-items-center justify-content-between px-2">
+                                <div>
+                                    {{ 'wd.resource.index.selected_count'|trans({'%count%': this.selectedCount}) }}
+                                </div>
+                                <div class="d-flex gap-2">
+                                    {% for action in bulkActions %}
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm {{ action.buttonClass|default('btn-primary') }}"
+                                            data-controller="bulk-action"
+                                            data-bulk-action-url-value="{{ action.path }}"
+                                            data-bulk-action-ids-value="{{ selectedIdsList|json_encode }}"
+                                            data-bulk-action-requires-confirmation-value="{{ action.requiresConfirmation ? 'true' : 'false' }}"
+                                            data-bulk-action-confirm-message-value="{{ (action.confirmMessage ?? 'wd.resource.index.bulk_confirm')|trans({'%count%': this.selectedCount})|e('html_attr') }}"
+                                            data-action="click->bulk-action#execute"
+                                        >
+                                            {% if action.icon %}
+                                                {{ ux_icon(action.icon, { class: 'me-1' }) }}
+                                            {% endif %}
+                                            {{ action.label|trans }}
+                                        </button>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% endif %}
+                {% for resource in result.items %}
+                    {% set showRoute = this.getShowRouteFor(resource) %}
+                    <tr
+                        class="{{ showRoute ? 'cursor-pointer' : '' }}"
+                        {% if showRoute %}
+                            data-controller="table-row-click"
+                            data-table-row-click-url-value="{{ showRoute }}"
+                            data-action="click->table-row-click#click auxclick->table-row-click#auxclick"
+                        {% endif %}
+                    >
+                        {% if bulkActions is not empty %}
+                            <td class="action-field">
+                                <div class="form-check">
+                                    <input
+                                        type="checkbox"
+                                        class="form-check-input bulk-select-checkbox"
+                                        data-model="on(change)|selectedIds.{{ resource.id }}"
+                                        {% if this.isIdSelected(resource.id) %}checked{% endif %}
+                                        value="1"
+                                    >
+                                </div>
+                            </td>
+                        {% endif %}
+                        {% for name, field in indexView.fields %}
+                            {% set alignClass = field.align is defined and field.align in ['start', 'center', 'end'] ? 'text-' ~ field.align : '' %}
+                            <td class="{{ [alignClass, field.cell_class|default('')]|join(' ')|trim }}">
+                                {{ resource_index_render_field(resource, name, field, {
+                                    index: this.index,
+                                    view: this.view,
+                                }) }}
+                            </td>
+                        {% endfor %}
+                        {% if hasItemActions %}
+                            <td class="text-end action-field">
+                                <div class="btn-group btn-group-sm" role="group" aria-label="{{ 'wd.resource.index.aria.item_actions'|trans }}">
+                                    {% if showRoute %}
+                                        <a
+                                            href="{{ showRoute }}"
+                                            class="btn btn-info btn-icon rounded-circle me-1"
+                                            title="{{ 'wd.resource.common.action.show'|trans|capitalize }}"
+                                            aria-label="{{ 'wd.resource.common.action.show'|trans|capitalize }}"
+                                        >
+                                            {{ ux_icon('tabler:eye', { class: 'fs-xl' }) }}
+                                        </a>
+                                    {% endif %}
+
+                                    {% set updateRoute = this.getUpdateRouteFor(resource) %}
+                                    {% if updateRoute %}
+                                        <a
+                                            href="{{ updateRoute }}"
+                                            class="btn btn-warning btn-icon rounded-circle me-1"
+                                            title="{{ 'wd.resource.common.action.update'|trans|capitalize }}"
+                                            aria-label="{{ 'wd.resource.common.action.update'|trans|capitalize }}"
+                                        >
+                                            {{ ux_icon('tabler:pencil', { class: 'fs-xl' }) }}
+                                        </a>
+                                    {% endif %}
+
+                                    {% set deleteRoute = this.getDeleteRouteFor(resource) %}
+                                    {% if deleteRoute %}
+                                        <form
+                                            method="post"
+                                            action="{{ deleteRoute }}"
+                                            class="d-inline"
+                                        >
+                                            <input type="hidden" name="_method" value="DELETE">
+                                            <input type="hidden" name="_csrf_token" value="{{ csrf_token(resource.id) }}">
+                                            <button
+                                                type="submit"
+                                                class="btn btn-danger btn-icon rounded-circle"
+                                                data-action="click->event.stop"
+                                                onclick="return confirm('{{ 'wd.resource.common.confirm.delete'|trans }}')"
+                                                title="{{ 'wd.resource.common.action.delete'|trans|capitalize }}"
+                                                aria-label="{{ 'wd.resource.common.action.delete'|trans|capitalize }}"
+                                            >
+                                                {{ ux_icon('tabler:trash', { class: 'fs-xl' }) }}
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        {% endif %}
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="{{ indexView.fields|length + (hasItemActions ? 1 : 0) + (bulkActions is not empty ? 1 : 0) }}">{{ 'wd.resource.index.no_results'|trans|capitalize }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

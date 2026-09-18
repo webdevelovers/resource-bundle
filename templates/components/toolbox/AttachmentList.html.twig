@@ -1,0 +1,119 @@
+<div{{ attributes }} class="px-2">
+    {% set referenceObject =  {
+        'resourceID' : this.resourceID,
+        'resourceName' : this.resourceName,
+        'resourceType' : this.resourceType
+    } %}
+    {% set attachments = this.attachments %}
+    {% set fileNameMaxLength = this.fileNameMaxLength > 3 ? this.fileNameMaxLength : 3 %}
+    {% set active = attachments|length > 0 %}
+
+    <div id="attachments" class="px-2">
+        <div class="hr">
+            <span class="hr-title"
+                  role="button"
+                  {% if active %}
+                      data-bs-toggle="collapse"
+                      aria-expanded="true"
+                      aria-controls="collapseAttachments"
+                  {% endif %}
+            >Allegati ({{ attachments|length }})</span>
+        </div>
+            {% if attachments|length > 0 %}
+                <div class="collapse show" id="collapseAttachments">
+                    <div class="attachment-list">
+                        {% for attachment in attachments %}
+                            <div class="attachment-list-item" id="{{ attachment.id.toRfc4122 }}" title="{{ attachment.originalName }}" aria-label="{{ attachment.originalName }}">
+                                <div class="attachment-list-icon d-flex align-items-center" role="menuitem" aria-label="Preview" tabindex="-1">
+                                    <twig:ux:icon name="{{ file_icon(attachment) }}" class="attachment-list-icon-svg" style="color: {{ icon_color(attachment) }}" />
+                                </div>
+                                <div class="attachment-list-content">
+                                    {% set attachmentName = attachment.originalName ?? '' %}
+                                    {% set shouldTrimName = attachmentName|length > fileNameMaxLength %}
+                                    {% set displayedAttachmentName = shouldTrimName ? attachmentName|slice(0, fileNameMaxLength - 1) ~ '…' : attachmentName %}
+                                    {% set fileUrl = vich_uploader_asset(attachment) %}
+                                    {% set mimeType = attachment.mimeType ?? '' %}
+                                    {% set extension = (attachment.originalName ?? attachment.fileName ?? '')|split('.')|last|lower %}
+                                    {% set canOpenInNewTab =
+                                        mimeType starts with 'image/'
+                                        or mimeType in ['application/pdf', 'text/plain', 'text/markdown']
+                                        or extension in ['pdf', 'jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg', 'txt', 'md']
+                                    %}
+
+                                    <a
+                                            class="attachment-list-name text-decoration-none text-dark-500"
+                                            href="{{ fileUrl }}"
+                                            {% if canOpenInNewTab %}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            {% else %}
+                                                download
+                                            {% endif %}
+                                    >{{ displayedAttachmentName }}</a>
+                                </div>
+                                <div class="attachment-list-actions">
+                                    <small class="attachment-list-size">{{ attachment.fileSize|human_readable_filesize }}</small>
+                                    <button class="btn attachment-list-action-btn justify-content-center align-items-center rounded-0 p-0" title="Download">
+                                        <a href="{{ vich_uploader_asset(attachment) }}" download>
+                                            <twig:ux:icon name="download" />
+                                        </a>
+                                    </button>
+                                    {% set resourceId = (attachment.id.toRfc4122 ?? attachment.id) %}
+                                    {% set routeParams = { id: resourceId } %}
+
+                                    {% set confirmModalId = (
+                                        'confirm-attachment-delete-' ~ resourceId
+                                        )|replace({'.':'-', '/':'-', ':':'-', '{':'-', '}':'-'}) %}
+
+                                    <button
+                                            class="btn attachment-list-action-btn top-0 justify-content-center align-items-center rounded-0 p-0"
+                                            title="Remove"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#{{ confirmModalId }}"
+                                    >
+                                        <twig:ux:icon name="trash" />
+                                    </button>
+
+                                    {% set confirmMessage = action.confirmMessage|default('Sei sicuro di voler procedere?') %}
+
+                                    {% component BootstrapModal with { id: confirmModalId, key: confirmModalId, confirmMessage: confirmMessage, actionId: resourceId } %}
+                                        {% block modal_header %}
+                                            <h5 class="modal-title">
+                                                {{ 'wd.resource.common.action.confirm'|trans }}
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'wd.resource.common.action.close'|trans }}"></button>
+                                        {% endblock %}
+
+                                        {% block modal_body %}
+                                            <p class="mb-0">{{ this.confirmMessage|trans }}</p>
+                                        {% endblock %}
+
+                                        {% block modal_footer %}
+                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                                {{ 'wd.ui.cancel'|default('Annulla')|trans }}
+                                            </button>
+
+                                            <a
+                                                    class="btn btn-primary"
+                                                    data-action="live#action"
+                                                    data-live-action-param="forward"
+                                                    data-live-event-param="deleteAttachment"
+                                                    data-live-id-param="{{ this.actionId }}"
+                                            >
+                                                {{ 'wd.ui.proceed'|default('Procedi')|trans }}
+                                            </a>
+                                        {% endblock %}
+                                    {% endcomponent %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center">
+                    <p class="">{{ 'wd.resource.common.no_element_found'|trans }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,163 @@
+<div{{ attributes }} id="planned-activities-component">
+    {% set referenceObject =  {
+        'resourceID' : this.resourceID,
+        'resourceName' : this.resourceName,
+        'resourceType' : this.resourceType
+    } %}
+    <style>
+        .done{
+            text-decoration: line-through;
+        }
+
+        #editActivityOffcanvas {
+            --theme-offcanvas-width: 640px;
+        }
+    </style>
+    {% set activities = this.activities %}
+    <div id="planned-activities" class="px-3">
+        <div class="hr">
+                <span class="hr-title"
+                      data-bs-toggle="collapse"
+                      href="#collapsePlannedActivities"
+                      role="button"
+                      aria-expanded="{% if activities|length > 0 %}true{% else %}false{% endif %}"
+                      aria-controls="collapsePlannedActivities"
+                >Attività ({{ activities|length }})</span>
+        </div>
+
+        <div class="collapse {% if activities|length > 0 %}show{% endif %}" id="collapsePlannedActivities">
+            <div class="row">
+                <div class="col-12">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-activities mb-0">
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th>Oggetto</th>
+                                <th>Tipo</th>
+                                <th>Scadenza</th>
+                                <th>Responsabile</th>
+                                <th class="text-end">Azioni</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for activity in activities %}
+                                {% set done = activity.done %}
+                                {% set descriptionText = (activity.description ?? 'Nessuna descrizione')|striptags|trim %}
+                                <tr id="{{ activity.id }}">
+                                    <td>
+                                        <input
+                                                role="button"
+                                                type="checkbox"
+                                                style="vertical-align: middle"
+                                                data-action="live#action"
+                                                data-live-action-param="toggleDone"
+                                                data-live-id-param="{{ activity.id }}"
+                                                {% if done %}checked{% endif %}
+                                        />
+                                    </td>
+                                    <td {% if done %}class="done"{% endif %}>{{ activity.summary }}</td>
+                                    <td {% if done %}class="done"{% endif %}>{{ activity.activityType }}</td>
+                                    <td {% if done %}class="done"{% endif %}>{{ activity.dueDate|date('d-m-Y H:i') }}</td>
+                                    <td {% if done %}class="done"{% endif %}>{{ activity.assignedTo.fullName }}</td>
+                                    <td class="text-end activity-actions">
+                                        <div class="btn-group shadow-none">
+                                            <button
+                                                    type="button"
+                                                    class="edit-activity btn top-0 justify-content-center align-items-center w-100 h-100 rounded-0 p-0 me-2"
+                                                    data-bs-toggle="offcanvas"
+                                                    role="button"
+                                                    aria-controls="editActivityOffcanvas"
+                                                    data-action="live#action"
+                                                    data-live-action-param="startEdit"
+                                                    data-live-id-param="{{ activity.id }}"
+                                            ><twig:ux:icon name="edit" /></button>
+                                            {% if activity.description %}
+                                                <button
+                                                        type="button"
+                                                        class="btn top-0 justify-content-center align-items-center w-100 h-100 rounded-0 p-0 me-2"
+                                                        title="Mostra descrizione"
+                                                        data-bs-toggle="popover"
+                                                        data-bs-title="Descrizione attività"
+                                                        data-bs-placement="left"
+                                                        data-bs-html="true"
+                                                        data-bs-content="{{ descriptionText|raw }}"
+                                                        data-bs-trigger="focus"
+                                                >
+                                                    {{ ux_icon('tabler:info-circle') }}
+                                                </button>
+                                            {% endif %}
+                                            <button
+                                                    class="btn top-0 justify-content-center align-items-center w-100 h-100 rounded-0 p-0"
+                                                    title="Elimina"
+                                                    onclick="return confirm('Confermi la rimozione di questa attività?');"
+                                                    data-action="live#action"
+                                                    data-live-action-param="deleteActivity"
+                                                    data-live-id-param="{{ activity.id }}"
+                                            >
+                                                {{ ux_icon('tabler:trash') }}
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr class="text-center">
+                                    <td colspan="6">{{ 'wd.resource.common.no_element_found'|trans }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div
+            class="offcanvas offcanvas-end"
+            tabindex="-1"
+            id="editActivityOffcanvas"
+            aria-labelledby="editActivityOffcanvasLabel"
+    >
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="editActivityOffcanvasLabel">{{ 'wd.resource.common.action.edit'|trans }} attività</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="row">
+                <div class="col-12">
+                    {{ form_start(form, {
+                        attr: {
+                            novalidate: 'novalidate',
+                            'data-action': 'live#action:prevent',
+                            'data-live-action-param': 'saveEdit',
+                        },
+                    }) }}
+                    <div class="row">
+                        <div class="col-md-6 col-12">
+                            {{ form_row(form.summary) }}
+                        </div>
+                        <div class="col-md-6 col-12">
+                            {{ form_row(form.activityType) }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 col-12">
+                            {{ form_row(form.dueDate, { label_attr: { class: 'pt-0 pb-0' } }) }}
+                        </div>
+                        <div class="col-md-6 col-12">
+                            {{ form_row(form.assignedTo) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            {{ form_row(form.description) }}
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">{{ 'wd.resource.common.action.save'|trans|capitalize }}</button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,140 @@
+{% if actions is not empty %}
+    {% set resourceId = (resource.id.toRfc4122 ?? resource.id) %}
+    {% set routeParams = { id: resourceId } %}
+
+    <div class="card shadow-sm border-0 mb-2 p-2 rounded-0 resource-actions my-2">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div class="d-flex flex-wrap gap-1" role="group" aria-label="Resource actions">
+                {% for action in actions %}
+                    {% set confirmModalId = (
+                        'confirm-' ~ action.routeName ~ '-' ~ resourceId
+                    )|replace({ '.': '-', '/': '-', ':': '-', '{': '-', '}': '-' }) %}
+
+                    {% if action.opensModal() %}
+                        <button
+                            type="button"
+                            class="{{ action.buttonClass|default('btn btn-secondary') }}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#{{ action.modalId }}"
+                        >
+                            {% if action.icon %}
+                                <twig:ux:icon name="{{ action.icon }}" />
+                            {% endif %}
+                            {{ action.label|trans|title }}
+                        </button>
+                    {% elseif action.requiresConfirmation %}
+                        <button
+                            type="button"
+                            class="{{ action.buttonClass|default('btn btn-secondary') }}"
+                            data-bs-toggle="modal"
+                            data-bs-target="#{{ confirmModalId }}"
+                        >
+                            {% if action.icon %}
+                                <twig:ux:icon name="{{ action.icon }}" />
+                            {% endif %}
+                            {{ action.label|trans|title }}
+                        </button>
+                    {% elseif action.isGetOnly() %}
+                        <a
+                            role="button"
+                            class="{{ action.buttonClass|default('btn btn-secondary') }}"
+                            href="{{ path(action.routeName, routeParams) }}"
+                        >
+                            {% if action.icon %}
+                                <twig:ux:icon name="{{ action.icon }}" />
+                            {% endif %}
+                            {{ action.label|trans|title }}
+                        </a>
+                    {% else %}
+                        <form action="{{ path(action.routeName, routeParams) }}" method="post" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token(action.routeName ~ ':' ~ resourceId) }}">
+                            <button type="submit" class="{{ action.buttonClass|default('btn btn-secondary') }}">
+                                {% if action.icon %}
+                                    <twig:ux:icon name="{{ action.icon }}" />
+                                {% endif %}
+                                {{ action.label|trans|title }}
+                            </button>
+                        </form>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        {% block resource_action_modals %}
+            {% for action in actions %}
+
+                {% set confirmModalId = (
+                    'confirm-' ~ action.routeName ~ '-' ~ resourceId
+                    )|replace({ '.': '-', '/': '-', ':': '-', '{': '-', '}': '-' }) %}
+
+                {# 1) Modali "custom" già esistenti #}
+                {% if action.opensModal() %}
+                    {% set modalContext = (action.modalContext ?? { })|merge({
+                        resource: resource,
+                        resourceId: resourceId,
+                        resourceAlias: resourceAlias,
+                        actionRouteName: action.routeName,
+                        actionUrl: path(action.routeName, routeParams),
+                    }) %}
+
+                    {% component BootstrapModal with { id: action.modalId, internalComponent: action.modalInternalComponent, context: modalContext } %}
+                        {% block modal_header %}
+                            <h5 class="modal-title">
+                                {% if action.icon %}
+                                    <twig:ux:icon name="{{ action.icon }}" />
+                                {% endif %}
+                                {{ action.label|trans|title }}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'wd.ui.close'|trans }}"></button>
+                        {% endblock %}
+
+                        {% block modal_body %}
+                            {% if action.modalInternalComponent %}
+                                {{ component(action.modalInternalComponent, { context: modalContext }) }}
+                            {% else %}
+                                <p class="mb-0">{{ action.label|trans|title }}</p>
+                            {% endif %}
+                        {% endblock %}
+                    {% endcomponent %}
+                {% endif %}
+
+                {# 2) Modale di conferma standard #}
+                {% if action.requiresConfirmation %}
+                    {% set confirmMessage = action.confirmMessage|default('Sei sicuro di voler procedere?') %}
+
+                    {% component BootstrapModal with { id: confirmModalId } %}
+                        {% block modal_header %}
+                            <h5 class="modal-title">
+                                {{ 'wd.ui.confirm'|trans }}
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'wd.ui.close'|trans }}"></button>
+                        {% endblock %}
+
+                        {% block modal_body %}
+                            <p class="mb-0">{{ confirmMessage|trans }}</p>
+                        {% endblock %}
+
+                        {% block modal_footer %}
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                {{ 'wd.ui.cancel'|default('Annulla')|trans }}
+                            </button>
+
+                            {% if action.isGetOnly() %}
+                                <a class="btn btn-primary" href="{{ path(action.routeName, routeParams) }}">
+                                    {{ 'wd.ui.proceed'|default('Procedi')|trans }}
+                                </a>
+                            {% else %}
+                                <form action="{{ path(action.routeName, routeParams) }}" method="post" class="d-inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token(action.routeName ~ ':' ~ resourceId) }}">
+                                    <button type="submit" class="btn btn-primary">
+                                        {{ 'wd.ui.proceed'|default('Procedi')|trans }}
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% endblock %}
+                    {% endcomponent %}
+                {% endif %}
+            {% endfor %}
+        {% endblock %}
+    </div>
+{% endif %}

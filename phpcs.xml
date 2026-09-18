@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset>
+    <file>src</file>
+
+    <arg name="extensions" value="php"/>
+    <arg name="parallel" value="16"/>
+    <arg name="colors"/>
+
+    <!-- Ignore warnings, show progress of the run and show sniff names -->
+    <arg value="nps"/>
+    <rule ref="Solido" />
+
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>.phpstan/*</exclude-pattern>
+    <exclude-pattern>var/*</exclude-pattern>
+
+</ruleset>

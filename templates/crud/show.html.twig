@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block show_page_title %}{{ 'page title'|trans }}{% endblock %}
+
+{% import '@WebDeveloversResource/macro/buttons.html.twig' as buttons %}
+
+{% block content %}
+<div id="show-page" class="container-fluid px-0">
+    {% set pageTitle = block('show_page_title') %}
+    {% set breadcrumb =
+        '<li class="breadcrumb-item"><a href="#">Root</a></li>' ~
+        '<li class="breadcrumb-item active" aria-current="page">' ~ pageTitle ~ '</li>'
+    %}
+
+    {% include '@WebDeveloversResource/_page_title_head.html.twig' with { pageTitle: pageTitle, breadcrumb: breadcrumb } only %}
+
+    {% block show_page_header %}
+        {% set index_route_name = configuration.getRouteName('index') %}
+        {% set update_route_name = configuration.getRouteName('update') %}
+        {% set delete_route_name = configuration.getRouteName('delete') %}
+
+        {% set index_url = route_available(configuration, 'index')
+            ? path(
+            configuration.vars.index.route.name|default(index_route_name),
+            configuration.vars.index.route.parameters|default(configuration.vars.route.parameters|default({ })),
+        )
+            : null
+        %}
+
+        {% set update_url = route_available(configuration, 'update')
+            ? path(
+            configuration.vars.index.route.name|default(update_route_name),
+            configuration.vars.index.route.parameters|default(configuration.vars.route.parameters|default({ id: resource.id })),
+        )
+            : null
+        %}
+
+        {% set delete_url = route_available(configuration, 'delete')
+            ? path(
+            configuration.vars.delete.route.name|default(delete_route_name),
+            configuration.vars.delete.route.parameters|default(configuration.vars.route.parameters|default({ id: resource.id })),
+        )
+            : null
+        %}
+
+        {% set metadata_index_permission = configuration.metadata.name ~ '_index' %}
+        {% set metadata_update_permission = configuration.metadata.name ~ '_update' %}
+        {% set metadata_delete_permission = configuration.metadata.name ~ '_delete' %}
+
+        <div class="show-page-header d-flex flex-wrap align-items-center justify-content-between gap-2 my-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="btn-group" role="group" aria-label="Actions">
+                    {% if update_url and is_granted(metadata_update_permission, resource) %}
+                        {{ buttons.edit(update_url, 'wd.action.edit', null, 'warning') }}
+                    {% endif %}
+                    {% if index_url and is_granted(metadata_index_permission) %}
+                        {{ buttons.cancel(index_url, 'wd.action.back', null, 'secondary') }}
+                    {% endif %}
+                    {% if delete_url and is_granted(metadata_delete_permission, resource) %}
+                        {{ buttons.delete(delete_url, null, true, resource.id, '', true) }}
+                    {% endif %}
+                </div>
+
+                <div class="vr d-none d-sm-inline-block"></div>
+
+                <div class="d-flex flex-column lh-sm">
+                    {% set metadata_name = configuration.routeNamePrefix ?? metadata.name %}
+                    {% set root_label = configuration.vars.root_label|default(metadata.applicationName ~ '.resource.' ~ metadata_name ~ '.plural') %}
+
+                    <a href="{{ index_url }}" class="">{{ root_label|trans|title }}</a>
+                    <div class="small text-muted">{{ resource }}</div>
+                </div>
+            </div>
+
+            {# {{ component('Toolbox:Bookmarks') }} #}
+
+            <div class="d-xl-none">
+                <button
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#toolboxOffcanvas"
+                        aria-controls="toolboxOffcanvas"
+                >
+                    Toolbox
+                </button>
+            </div>
+        </div>
+    {% endblock %}
+
+    <hr class="m-0" />
+    {% block show_page_content %}
+        <div class="row g-0 wd-crud">
+            <div class="col-xl-8 col-12">
+                {% set resourceAlias = configuration.request.attributes.get('_resource_alias') %}
+                {% set transitionActions = resource_actions(resource, configuration, resourceAlias, 'transition') %}
+                {% set extraActions = resource_actions(resource, configuration, resourceAlias, 'extra') %}
+                {% set actions = transitionActions|merge(extraActions) %}
+
+                {% include '@WebDeveloversResource/crud/show/_action_bar.html.twig' %}
+
+                {# {{ include('theme/crud/_resource_actions.html.twig') }} #}
+                <div class="card border-end-0 rounded-0{% if actions is empty %} border-top-0{% endif %}">
+                    <div class="card-body wd-crud-body">
+                        <div class="wd-crud-header">
+                            <div class="me-2">
+                                <div class="h3 wd-crud-title">{{ resource }}</div>
+                            </div>
+                        </div>
+                        <div class="wd-crud-content">
+                            LOLLER
+                            {% set default_show_content_template = metadata.name ~ '/show_content.html.twig' %}
+                            {{ include(configuration.vars.templates.content|default(default_show_content_template)) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {#
+            <div class="col-xl-4 col-12 border-start border-top-0 border-end-0 mt-3 mt-xl-0 d-none d-xl-block">
+                {{ component('Toolbox', {
+                    resourceID: resource.id,
+                    resourceName: resource.__toString(),
+                    resourceType: configuration.request.attributes.get('_resource_alias'),
+                    section: configuration.parameters.get('section'),
+                    id: 'toolbox-component',
+                }) }}
+            </div>
+            #}
+        </div>
+    {% endblock %}
+</div>
+{% endblock %}

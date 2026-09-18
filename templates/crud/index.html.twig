@@ -1,0 +1,10 @@
+{% extends 'base.html.twig' %}
+
+{% block content %}
+    {{ component('resource_crud_index_table', index_component_context|merge({
+        criteria: index_state.criteria,
+        sort: index_state.sort,
+        page: index_state.page,
+        perPage: index_state.perPage,
+    })) }}
+{% endblock %}

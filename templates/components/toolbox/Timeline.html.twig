@@ -1,0 +1,60 @@
+<div{{ attributes }} id="timeline-component">
+    {% set referenceObject =  {
+        'resourceID' : this.resourceID,
+        'resourceName' : this.resourceName,
+        'resourceType' : this.resourceType
+    } %}
+    {% set visibleTimeline = this.visibleTimeline %}
+    {% set noteCount = this.noteCount %}
+    {% set auditCount = this.auditCount %}
+    {% set active = visibleTimeline|length > 0 %}
+
+    <div id="timeline" class="px-3 pb-5">
+        <div class='hr'>
+                <span class="hr-title"
+                      data-bs-toggle="collapse"
+                      role="button"
+                      aria-expanded="true"
+                      aria-controls="collapseTimeline"
+                >Timeline ({{ noteCount + auditCount }})</span>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap timeline-filters mt-2 mb-3">
+            <button
+                    type="button"
+                    class="badge border-0 {{ this.showNotes ? 'text-bg-primary' : 'text-bg-light' }}"
+                    data-action="live#action"
+                    data-live-action-param="toggleFilter"
+                    data-live-filter-param="notes"
+            >
+                {{ 'wd.resource.toolbox.timeline.notes'|trans|capitalize }} ({{ noteCount }})
+            </button>
+            <button
+                    type="button"
+                    class="badge border-0 {{ this.showAudit ? 'text-bg-primary' : 'text-bg-light' }}"
+                    data-action="live#action"
+                    data-live-action-param="toggleFilter"
+                    data-live-filter-param="audit"
+            >
+                {{ 'wd.resource.toolbox.timeline.audit'|trans|capitalize }} ({{ auditCount }})
+            </button>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="timeline-entries collapse show overflow-x-hidden overflow-y-auto" id="collapseTimeline" style="max-height:70vh">
+                    {% for entry in visibleTimeline %}
+                        <div id="{{ entry.id }}">{{ erp_toolbox_timeline_entry(entry, this.resourceType)|raw }}</div>
+                        {% if not loop.last %}
+                            <hr style="opacity: 0.1; margin: 0.7rem 0;"/>
+                        {% endif %}
+                    {% else %}
+                        <div class="col-12 text-center">
+                            <p class="">{{ 'wd.resource.common.no_element_found'|trans|capitalize }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

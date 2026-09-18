@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html
+        lang="it"
+        data-skin="classic"
+        data-bs-theme="light"
+        data-topbar-color="light"
+        data-menu-color="light"
+        data-layout-width="fluid"
+        data-layout-position="fixed"
+        data-sidenav-size="default"
+        data-sidenav-user="true"
+        data-layout="topnav"
+>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Title-to-change{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        {% block stylesheets %}
+            <link rel="stylesheet" href="{{ asset('inspinia-theme/dist/app.css') }}">
+            <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+        {% endblock %}
+        {% block javascripts %}
+            {{ importmap('app') }}
+        {% endblock %}
+    </head>
+    <body style="
+            --theme-logo-lg-height: 32px;
+            --theme-body-font-size: 0.97rem;
+            --theme-font-size-base: 0.97rem;
+            --theme-nav-link-font-size: 0.95rem;
+        ">
+        {% block body %}
+            <div class="wrapper">
+                {% block topbar %}{% endblock topbar %}
+
+                <div class="content-page">
+                    <div class="container-fluid px-0">
+                        {% block content %}{% endblock %}
+                    </div>
+                </div>
+
+                {% block footer %}{% include '@WebDeveloversResource/_footer.html.twig' %}{% endblock footer %}
+            </div>
+        {% endblock %}
+    </body>
+</html>

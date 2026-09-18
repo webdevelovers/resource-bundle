@@ -1,0 +1,31 @@
+<div {{ attributes }}>
+    {% if this.bookmarks is not empty %}
+        <nav class="app-bookmarks navbar navbar-expand py-0 border-bottom">
+        <div class="container-fluid d-flex flex-row-reverse">
+            <ul class="navbar-nav py-2 ">
+                {% for bookmark in this.bookmarks %}
+                    {% set referenceObject =  {
+                        'resourceID' : bookmark.subject,
+                        'resourceName' : bookmark.subjectName,
+                        'resourceType' : bookmark.resourceAlias
+                    } %}
+                    <li class="nav-item d-none d-md-flex me-3 badge bg-light text-dark align-items-center justify-content-center" id="{{ bookmark.id.toRfc4122 }}">
+                        <a href="{{ resource_url(bookmark.subject, bookmark.resourceAlias, bookmark.section) }}" class="flex-shrink-0 pe-2">{{ bookmark.subjectName }}</a>
+                        <a
+                                role="button"
+                                class=""
+                                style="font-size: 0.8rem"
+                                title="Remove"
+                                data-action="live#action"
+                                data-live-action-param="deleteBookmark"
+                                data-live-id-param="{{ bookmark.id.toRfc4122 }}"
+                        >
+                            <twig:ux:icon name="x"/>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </nav>
+    {% endif %}
+</div>
