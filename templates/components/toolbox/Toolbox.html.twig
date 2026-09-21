@@ -16,8 +16,8 @@
         'resourceType' : resourceType
     }
     %}
-
-    <div class="toolbox-header p-2 pt-3 d-flex justify-content-between">
+    <div class="toolbox">
+        <div class="toolbox-header p-2 pt-3 d-flex justify-content-between">
         <div class="row g-2">
             <div class="col-auto">
                 {{ component('Toolbox:UploadAttachment', {
@@ -71,13 +71,14 @@
         </div>
     </div>
 
-    {{ component('Toolbox:PlannedActivities', { resourceID: resourceID, resourceName: resourceName, resourceType: resourceType, section: section, id: 'planned-activities-component' }) }}
-    {{ component('Toolbox:AttachmentList', { resourceID: resourceID, resourceName: resourceName, resourceType: resourceType, section: section, id: 'attachment-list-component' }) }}
-    {{ component('Toolbox:Timeline', {
-        resourceID: resourceID,
-        resourceName: resourceName,
-        resourceType: resourceType,
-        section: section,
-        id: 'timeline-component'
-    }) }}
+        {{ component('Toolbox:PlannedActivities', { resourceID: resourceID, resourceName: resourceName, resourceType: resourceType, section: section, id: 'planned-activities-component' }) }}
+        {{ component('Toolbox:AttachmentList', { resourceID: resourceID, resourceName: resourceName, resourceType: resourceType, section: section, id: 'attachment-list-component' }) }}
+        {{ component('Toolbox:Timeline', {
+            resourceID: resourceID,
+            resourceName: resourceName,
+            resourceType: resourceType,
+            section: section,
+            id: 'timeline-component'
+        }) }}
+    </div>
 </div>

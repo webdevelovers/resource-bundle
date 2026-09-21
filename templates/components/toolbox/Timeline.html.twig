@@ -44,7 +44,7 @@
             <div class="col-12">
                 <div class="timeline-entries collapse show overflow-x-hidden overflow-y-auto" id="collapseTimeline" style="max-height:70vh">
                     {% for entry in visibleTimeline %}
-                        <div id="{{ entry.id }}">{{ erp_toolbox_timeline_entry(entry, this.resourceType)|raw }}</div>
+                        <div id="{{ entry.id }}">{{ resource_toolbox_timeline_entry(entry, this.resourceType)|raw }}</div>
                         {% if not loop.last %}
                             <hr style="opacity: 0.1; margin: 0.7rem 0;"/>
                         {% endif %}

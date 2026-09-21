@@ -55,7 +55,7 @@
                                     <small class="attachment-list-size">{{ attachment.fileSize|human_readable_filesize }}</small>
                                     <button class="btn attachment-list-action-btn justify-content-center align-items-center rounded-0 p-0" title="Download">
                                         <a href="{{ vich_uploader_asset(attachment) }}" download>
-                                            <twig:ux:icon name="download" />
+                                            {{ ux_icon('tabler:download') }}
                                         </a>
                                     </button>
                                     {% set resourceId = (attachment.id.toRfc4122 ?? attachment.id) %}
@@ -71,7 +71,7 @@
                                             data-bs-toggle="modal"
                                             data-bs-target="#{{ confirmModalId }}"
                                     >
-                                        <twig:ux:icon name="trash" />
+                                        {{ ux_icon('tabler:trash') }}
                                     </button>
 
                                     {% set confirmMessage = action.confirmMessage|default('Sei sicuro di voler procedere?') %}
@@ -111,7 +111,7 @@
                 </div>
             {% else %}
                 <div class="text-center">
-                    <p class="">{{ 'wd.resource.common.no_element_found'|trans }}</p>
+                    <p class="">{{ 'wd.resource.common.no_element_found'|trans|capitalize }}</p>
                 </div>
             {% endif %}
         </div>

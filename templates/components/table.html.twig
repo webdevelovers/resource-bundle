@@ -301,9 +301,9 @@
                     <tr
                         class="{{ showRoute ? 'cursor-pointer' : '' }}"
                         {% if showRoute %}
-                            data-controller="table-row-click"
-                            data-table-row-click-url-value="{{ showRoute }}"
-                            data-action="click->table-row-click#click auxclick->table-row-click#auxclick"
+                            data-href="{{ showRoute }}"
+                            onclick="if (!event.target.closest('.action-field, a, button, input, select, textarea, label')) { window.location.assign(this.dataset.href); }"
+                            onauxclick="if (event.button === 1 && !event.target.closest('.action-field, a, button, input, select, textarea, label')) { window.open(this.dataset.href, '_blank', 'noopener'); }"
                         {% endif %}
                     >
                         {% if bulkActions is not empty %}

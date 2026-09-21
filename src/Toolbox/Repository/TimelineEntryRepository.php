@@ -29,8 +29,8 @@ class TimelineEntryRepository extends ServiceEntityRepository
         Uuid $subject,
     ): array {
         $qb = $this->createQueryBuilder('t');
-        $qb->andWhere('t.subject = :subject')
-            ->setParameter('subject', $subject, UuidType::NAME)
+        $qb->andWhere('t.subjectId = :subjectId')
+            ->setParameter('subjectId', $subject, UuidType::NAME)
             ->addOrderBy('t.createdAt', 'DESC');
 
         return $qb->getQuery()->getResult();

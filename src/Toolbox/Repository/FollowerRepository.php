@@ -28,8 +28,8 @@ class FollowerRepository extends ServiceEntityRepository
         Uuid $subject,
     ): array {
         $qb = $this->createQueryBuilder('f');
-        $qb->andWhere('f.subject = :subject')
-            ->setParameter('subject', $subject, UuidType::NAME);
+        $qb->andWhere('f.subjectId = :subjectId')
+            ->setParameter('subjectId', $subject, UuidType::NAME);
 
         return $qb->getQuery()->getResult();
     }

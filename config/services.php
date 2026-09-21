@@ -50,15 +50,17 @@ use WebDevelovers\ResourceBundle\Routing\RouterAvailabilityResolver;
 use WebDevelovers\ResourceBundle\Security\AuthorizationChecker;
 use WebDevelovers\ResourceBundle\Security\AuthorizationCheckerInterface;
 use WebDevelovers\ResourceBundle\Security\CurrentUserProviderInterface;
+use WebDevelovers\ResourceBundle\Security\DoctrineUserClassResolver;
 use WebDevelovers\ResourceBundle\Security\SymfonyCurrentUserProvider;
+use WebDevelovers\ResourceBundle\Twig\Extension\AttachmentExtension;
 use WebDevelovers\ResourceBundle\Twig\Extension\IndexExtension;
-use WebDevelovers\ResourceBundle\Twig\Components\Table;
 use WebDevelovers\ResourceBundle\Twig\Extension\ResourceExtension;
-use WebDevelovers\ResourceBundle\Twig\Extension\RouteAvailabilityExtension;
 use WebDevelovers\ResourceBundle\Twig\Extension\ToolboxExtension;
+use WebDevelovers\ResourceBundle\Twig\Runtime\AttachmentExtensionRuntime;
 use WebDevelovers\ResourceBundle\Twig\Runtime\ResourceExtensionRuntime;
 use WebDevelovers\ResourceBundle\Toolbox\ToolboxManager;
 use WebDevelovers\ResourceBundle\Toolbox\ToolboxManagerInterface;
+use WebDevelovers\ResourceBundle\Twig\Components\Toolbox\Form\PlanActivityType;
 use WebDevelovers\ResourceBundle\Toolbox\Repository\ActivityRepository;
 use WebDevelovers\ResourceBundle\Toolbox\Repository\AttachmentRepository;
 use WebDevelovers\ResourceBundle\Toolbox\Repository\BookmarkRepository;
@@ -114,6 +116,7 @@ return static function (ContainerConfigurator $container): void {
     $services->set(FollowerRepository::class);
     $services->set(TimelineEntryRepository::class);
     $services->set(TimelineDiffPresenter::class);
+    $services->set(PlanActivityType::class);
     $services->set(TimelineValueFormatterRegistry::class);
     $services->set(DoctrineRelationValueFormatter::class)
         ->tag('wd.resource.timeline_value_formatter', ['priority' => 100]);
@@ -136,12 +139,15 @@ return static function (ContainerConfigurator $container): void {
     $services->set(RedirectHandler::class);
     $services->set(AuthorizationChecker::class);
     $services->set(SymfonyCurrentUserProvider::class);
+    $services->set(DoctrineUserClassResolver::class);
     $services->set(PropertyAccessDTOMapper::class);
 
-    // Twig components.
-    $services->set(Table::class);
+    // Twig/Live components.
+    $services->load('WebDevelovers\\ResourceBundle\\Twig\\Components\\', __DIR__ . '/../src/Twig/Components/');
+    $services->set(AttachmentExtension::class);
     $services->set(IndexExtension::class);
     $services->set(ResourceExtension::class);
+    $services->set(AttachmentExtensionRuntime::class);
     $services->set(ResourceExtensionRuntime::class);
     $services->set(ToolboxExtension::class);
     $services->set(ToolboxExtensionRuntime::class);

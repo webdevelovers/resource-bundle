@@ -20,7 +20,7 @@
     {% if followers|length > 0 %}
         <div class="dropdown">
             <a class="dropdown-toggle text-black text-decoration-none" data-bs-toggle="dropdown" href="#" aria-expanded="false" data-bs-offset="0,10">
-                <twig:ux:icon name="person-circle" /> <span class="label label-success">{{ followers|length }}</span>
+                {{ ux_icon('tabler:user-circle') }} <span class="label label-success">{{ followers|length }}</span>
             </a>
             <ul class="dropdown-menu rounded-0" style="min-width:250px;">
                 {% if followers is not empty %}
@@ -29,7 +29,7 @@
                 {% set currentUser = app.user %}
                 {% for follower in followers %}
                     <li class="dropdown-item d-flex">
-                        <twig:ux:icon name="person-up" class="me-2"/> {{ follower.user }}
+                        {{ ux_icon('tabler:user-filled', {class: 'me-2'}) }} {{ follower.user }}
                         {% if
                             (currentUser is not null and follower.user.id == currentUser.id)
                         %}
@@ -40,7 +40,7 @@
                                     data-live-action-param="removeFollower"
                                     data-live-id-param="{{ follower.user.id.toRfc4122 }}"
                             >
-                                <twig:ux:icon name="x" />
+                                {{ ux_icon('tabler:x') }}
                             </button>
                         {% endif %}
                     </li>
@@ -48,6 +48,6 @@
             </ul>
         </div>
     {% else %}
-        <div class="ms-2"><twig:ux:icon name="person-circle" /></div>
+        <div class="ms-2">{{ ux_icon('tabler:user-circle') }}</div>
     {% endif %}
 </div>

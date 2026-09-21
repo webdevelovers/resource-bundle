@@ -26,6 +26,7 @@
         "symfony/validator": "^8.1",
         "symfony/yaml": "^7.4|^8.0",
         "twig/twig": "^3.28",
+        "vich/uploader-bundle": "^3.0",
         "webdevelovers/resource-models": "dev-master"
     },
     "require-dev": {

@@ -28,8 +28,8 @@ class AttachmentRepository extends ServiceEntityRepository
         Uuid $subject,
     ): array {
         $qb = $this->createQueryBuilder('a');
-        $qb->andWhere('a.subject = :subject')
-            ->setParameter('subject', $subject, UuidType::NAME)
+        $qb->andWhere('a.subjectId = :subjectId')
+            ->setParameter('subjectId', $subject, UuidType::NAME)
             ->addOrderBy('a.createdAt', 'ASC');
 
         return $qb->getQuery()->getResult();

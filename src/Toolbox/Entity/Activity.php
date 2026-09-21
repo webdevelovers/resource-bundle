@@ -9,7 +9,6 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Safe\DateTime;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Uid\Uuid;
 use WebDevelovers\ResourceBundle\Model\ResourceReferenceDoctrineFields;
 use WebDevelovers\ResourceBundle\ResourceReference;
 use WebDevelovers\ResourceBundle\Toolbox\Repository\ActivityRepository;
@@ -17,6 +16,8 @@ use WebDevelovers\ResourceModels\Invariant\TimestampableInterface;
 use WebDevelovers\ResourceModels\Invariant\TimestampableTrait;
 use WebDevelovers\ResourceModels\Invariant\UUIDIdentifiableInterface;
 use WebDevelovers\ResourceModels\Invariant\UUIDIdentifiableTrait;
+use WebDevelovers\ResourceModels\Nullable\DescriptionAwareInterface;
+use WebDevelovers\ResourceModels\Nullable\DescriptionTrait;
 
 #[ORM\Entity(repositoryClass: ActivityRepository::class)]
 #[ORM\Table(name: 'toolbox_activity')]

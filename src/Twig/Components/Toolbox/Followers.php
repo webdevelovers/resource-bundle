@@ -18,6 +18,7 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 use WebDevelovers\ResourceBundle\ResourceReference;
 use WebDevelovers\ResourceBundle\Security\CurrentUserProviderInterface;
+use WebDevelovers\ResourceBundle\Security\DoctrineUserClassResolver;
 use WebDevelovers\ResourceBundle\Toolbox\Entity\Follower;
 use WebDevelovers\ResourceBundle\Toolbox\ToolboxManagerInterface;
 use function assert;
@@ -42,6 +43,7 @@ final class Followers
     public function __construct(
         private readonly CurrentUserProviderInterface $currentUserProvider,
         private readonly EntityManagerInterface $entityManager,
+        private readonly DoctrineUserClassResolver $userClassResolver,
         private readonly ToolboxManagerInterface $toolboxManager,
     ) {
     }
@@ -76,7 +78,8 @@ final class Followers
             return;
         }
 
-        $user = $this->entityManager->getRepository(UserInterface::class)->find($uuid);
+        $userClass = $this->userClassResolver->resolve();
+        $user = $this->entityManager->getRepository($userClass)->find($uuid);
         if ($user === null) {
             return;
         }

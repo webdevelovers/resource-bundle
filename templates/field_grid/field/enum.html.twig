@@ -1,0 +1,33 @@
+{% set empty = item.empty|default('-') %}
+
+{% if item.value is same as(null) or item.value == '' %}
+    {{ empty }}
+{% else %}
+    {# testo: override esplicito -> label() -> name -> value -> fallback #}
+    {% set text = item.text|default(null) %}
+
+    {% if text is same as(null) %}
+        {% if item.value.label is defined %}
+            {% set text = item.value.label %}
+        {% elseif item.value.name is defined %}
+            {% set text = item.value.name %}
+        {% elseif item.value.value is defined %}
+            {% set text = item.value.value %}
+        {% else %}
+            {% set text = item.value %}
+        {% endif %}
+    {% endif %}
+
+    {# badge class: override -> enum.badge() se presente -> secondary #}
+    {% set cls = item.badge_class|default(null) %}
+    {% if cls is same as(null) and item.value.badge is defined %}
+        {% set cls = item.value.badge %}
+    {% endif %}
+    {% set cls = cls|default('secondary') %}
+
+    {% if item.as_badge|default(true) %}
+        <span class="badge text-bg-{{ cls }}">{{ text|trans }}</span>
+    {% else %}
+        {{ text|trans }}
+    {% endif %}
+{% endif %}

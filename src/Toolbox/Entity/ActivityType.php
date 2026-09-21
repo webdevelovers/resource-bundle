@@ -16,6 +16,8 @@ use WebDevelovers\ResourceModels\Invariant\ToggleableInterface;
 use WebDevelovers\ResourceModels\Invariant\ToggleableTrait;
 use WebDevelovers\ResourceModels\Invariant\UUIDIdentifiableInterface;
 use WebDevelovers\ResourceModels\Invariant\UUIDIdentifiableTrait;
+use WebDevelovers\ResourceModels\Nullable\DescriptionAwareInterface;
+use WebDevelovers\ResourceModels\Nullable\DescriptionTrait;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'toolbox_activity_type')]

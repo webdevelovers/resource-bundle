@@ -29,8 +29,8 @@ class ActivityRepository extends ServiceEntityRepository
         Uuid $subject,
     ): array {
         $qb = $this->createQueryBuilder('a');
-        $qb->andWhere('a.subject = :subject')
-            ->setParameter('subject', $subject, UuidType::NAME)
+        $qb->andWhere('a.subjectId = :subjectId')
+            ->setParameter('subjectId', $subject, UuidType::NAME)
             ->addOrderBy('a.dueDate', 'ASC');
 
         return $qb->getQuery()->getResult();

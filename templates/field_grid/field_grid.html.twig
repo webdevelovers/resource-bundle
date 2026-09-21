@@ -1,0 +1,59 @@
+{% macro render(items, options = {}) %}
+    {% set labelWidth = options.label_width|default('auto') %}
+    {% set labelFixed = options.label_fixed|default(null) %}
+
+    {% set valueWidth = options.value_width|default('auto') %}
+    {% set valueFixed = options.value_fixed|default(null) %}
+    {% set valueOverflow = options.value_overflow|default('wrap') %}
+
+    {% set style = '' %}
+    {% if labelWidth == 'fixed' and labelFixed %}
+        {% set style = style ~ ' --fg-label-width: ' ~ labelFixed ~ ';' %}
+    {% endif %}
+    {% if valueWidth == 'fixed' and valueFixed %}
+        {% set style = style ~ ' --fg-value-width: ' ~ valueFixed ~ ';' %}
+    {% endif %}
+
+    <div class="field-grid" style="{{ style|trim }}">
+        {% for item in items %}
+            {% if item.visible_if is defined and not item.visible_if %}
+                {# skip item #}
+
+            {% elseif item.type|default('field') == 'title' %}
+                <div class="field-grid__title {{ item.class|default('')|trim }}">
+                    {% if item.html is defined %}
+                        {{ item.html|raw }}
+                    {% else %}
+                        {{ item.text|default('') }}
+                    {% endif %}
+                </div>
+
+            {% elseif item.type|default('field') == 'separator' %}
+                <div class="field-grid__separator {{ item.class|default('')|trim }}">
+                    <hr class="my-2">
+                </div>
+
+            {% else %}
+                <div class="field-grid__label">{{ item.label|trans }}</div>
+
+                {% set valueClass = 'field-grid__value ' ~ (item.value_class|default('')) %}
+
+                {% set overflow = item.value_overflow|default(valueOverflow) %}
+                {% if overflow == 'ellipsis' %}
+                    {% set valueClass = valueClass ~ ' field-grid__value--ellipsis' %}
+                {% elseif overflow == 'scrollx' %}
+                    {% set valueClass = valueClass ~ ' field-grid__value--scrollx' %}
+                {% endif %}
+
+                <div class="{{ valueClass|trim }}">
+                    {% if item.html is defined %}
+                        {{ item.html|raw }}
+                    {% else %}
+                        {% set tpl = item.template|default('@WebDeveloversResource/field_grid/field/text.html.twig') %}
+                        {{ include(tpl, { item: item }) }}
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endmacro %}

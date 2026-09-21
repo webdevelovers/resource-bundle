@@ -6,13 +6,7 @@
 
 {% block content %}
 <div id="show-page" class="container-fluid px-0">
-    {% set pageTitle = block('show_page_title') %}
-    {% set breadcrumb =
-        '<li class="breadcrumb-item"><a href="#">Root</a></li>' ~
-        '<li class="breadcrumb-item active" aria-current="page">' ~ pageTitle ~ '</li>'
-    %}
-
-    {% include '@WebDeveloversResource/_page_title_head.html.twig' with { pageTitle: pageTitle, breadcrumb: breadcrumb } only %}
+    {% include '@WebDeveloversResource/_page_title_head.html.twig' %}
 
     {% block show_page_header %}
         {% set index_route_name = configuration.getRouteName('index') %}
@@ -72,7 +66,7 @@
                 </div>
             </div>
 
-            {# {{ component('Toolbox:Bookmarks') }} #}
+            {# {{ component('WebDeveloversResource:toolbox:Bookmarks') }} #}
 
             <div class="d-xl-none">
                 <button
@@ -108,16 +102,15 @@
                             </div>
                         </div>
                         <div class="wd-crud-content">
-                            LOLLER
                             {% set default_show_content_template = metadata.name ~ '/show_content.html.twig' %}
                             {{ include(configuration.vars.templates.content|default(default_show_content_template)) }}
                         </div>
                     </div>
                 </div>
             </div>
-            {#
+
             <div class="col-xl-4 col-12 border-start border-top-0 border-end-0 mt-3 mt-xl-0 d-none d-xl-block">
-                {{ component('Toolbox', {
+                {{ component('WebDeveloversResource:toolbox:Toolbox', {
                     resourceID: resource.id,
                     resourceName: resource.__toString(),
                     resourceType: configuration.request.attributes.get('_resource_alias'),
@@ -125,7 +118,6 @@
                     id: 'toolbox-component',
                 }) }}
             </div>
-            #}
         </div>
     {% endblock %}
 </div>

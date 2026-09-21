@@ -1,0 +1,10 @@
+{% set empty = item.empty|default('-') %}
+{% set currency = item.currency|default('EUR') %}
+
+{% if item.value is same as(null) or item.value == '' %}
+    {{ empty }}
+{% else %}
+    {# Semplice e robusto senza dipendere da Intl: #}
+    {% set amount = item.value %}
+    {{ amount|number_format(2, ',', '.') }}&nbsp;{{ currency }}
+{% endif %}

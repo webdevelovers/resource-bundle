@@ -338,6 +338,10 @@ final class Table extends AbstractController
 
     public function getShowRouteFor(object $resource): string|null
     {
+        if (! $this->isActionGranted('show', $resource)) {
+            return null;
+        }
+
         return $this->generateItemRoute('show', $resource);
     }
 
@@ -541,6 +545,11 @@ final class Table extends AbstractController
         return $this->generateUrl($routeName, [
             'id' => $id,
         ]);
+    }
+
+    private function isActionGranted(string $action, object $resource): bool
+    {
+        return $this->isGranted($this->resourceAlias . '.' . $action, $resource);
     }
 
     private function resolveDisplayValues(): void

@@ -12,15 +12,22 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Security\Core\User\UserInterface;
+use WebDevelovers\ResourceBundle\Security\DoctrineUserClassResolver;
 use WebDevelovers\ResourceBundle\Toolbox\Entity\ActivityType;
 use WebDevelovers\ResourceBundle\Twig\Components\Toolbox\Model\PlanActivity;
 
 class PlanActivityType extends AbstractType
 {
+    public function __construct(
+        private readonly DoctrineUserClassResolver $userClassResolver,
+    ) {
+    }
+
     /** @param array<string,mixed> $options */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $userClass = $this->userClassResolver->resolve();
+
         $builder
             ->add('summary', TextType::class, ['label' => 'Nome'])
             ->add('activityType', EntityType::class, [
@@ -35,7 +42,7 @@ class PlanActivityType extends AbstractType
                 'required' => true,
             ])
             ->add('assignedTo', EntityType::class, [
-                'class' => UserInterface::class,
+                'class' => $userClass,
                 //'autocomplete' => true,
                 'required' => true,
                 'label' => 'Responsabile',

@@ -10,6 +10,7 @@ use Symfony\Component\Uid\Uuid;
 use Twig\Environment;
 use Twig\Extension\RuntimeExtensionInterface;
 use WebDevelovers\ResourceBundle\Security\CurrentUserProviderInterface;
+use WebDevelovers\ResourceBundle\Security\DoctrineUserClassResolver;
 use WebDevelovers\ResourceBundle\Toolbox\Entity\Attachment;
 use WebDevelovers\ResourceBundle\Toolbox\Entity\TimelineEntry;
 use WebDevelovers\ResourceBundle\Toolbox\Timeline\TimelineDiffPresenter;
@@ -32,6 +33,7 @@ readonly class ToolboxExtensionRuntime implements RuntimeExtensionInterface
         private EntityManagerInterface $entityManager,
         private TimelineDiffPresenter $timelineDiffPresenter,
         private readonly CurrentUserProviderInterface $currentUserProvider,
+        private DoctrineUserClassResolver $userClassResolver,
     ) {
     }
 
@@ -62,7 +64,8 @@ readonly class ToolboxExtensionRuntime implements RuntimeExtensionInterface
             return 'Sistema';
         }
 
-        $user = $this->entityManager->getRepository(UserInterface::class)->find($id);
+        $userClass = $this->userClassResolver->resolve();
+        $user = $this->entityManager->getRepository($userClass)->find($id);
         if (! $user instanceof UserInterface) {
             return 'Sistema';
         }
@@ -97,7 +100,8 @@ readonly class ToolboxExtensionRuntime implements RuntimeExtensionInterface
             return null;
         }
 
-        $user = $this->entityManager->getRepository(UserInterface::class)->find($id);
+        $userClass = $this->userClassResolver->resolve();
+        $user = $this->entityManager->getRepository($userClass)->find($id);
         if (! $user instanceof UserInterface) {
             return null;
         }
