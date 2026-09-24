@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+
+{% import '@WebDeveloversResource/macro/buttons.html.twig' as buttons %}
+
+{% block content %}
+    <div id="update-page" class="container-fluid px-0">
+        {% set index_route_name = configuration.getRouteName('index') %}
+        {% set show_route_name = configuration.getRouteName('show') %}
+
+        {% set index_url = route_available(configuration, 'index')
+            ? path(
+            configuration.vars.index.route.name|default(index_route_name),
+            configuration.vars.index.route.parameters|default(configuration.vars.route.parameters|default({ })),
+        )
+            : null
+        %}
+
+        {% set show_url = route_available(configuration, 'show')
+            ? path(
+            configuration.vars.show.route.name|default(show_route_name),
+            configuration.vars.show.route.parameters|default(configuration.vars.route.parameters|default({ id: resource.id })),
+        )
+            : null
+        %}
+
+        {% set formID = formID|default('resource-update-form') %}
+        {% set initialFormData = initialFormData|default(input) %}
+
+        <div class="update-page-header d-flex flex-wrap align-items-center justify-content-between gap-2 my-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="btn-group" role="group" aria-label="Actions">
+                    {{ buttons.submit('wd.action.update', null, 'warning', null, 'post', null, formID, []) }}
+                    {% if show_url %}
+                        {{ buttons.cancel(show_url, 'wd.action.cancel', null, 'secondary') }}
+                    {% elseif index_url %}
+                        {{ buttons.cancel(index_url, 'wd.action.back', null, 'secondary') }}
+                    {% endif %}
+                </div>
+
+                <div class="vr d-none d-sm-inline-block"></div>
+
+                <div class="d-flex flex-column lh-sm">
+                    {% set metadata_name = configuration.routeNamePrefix ?? metadata.name %}
+                    {% set root_label = configuration.vars.root_label|default(metadata.applicationName ~ '.resource.' ~ metadata_name ~ '.plural') %}
+
+                    {% if index_url %}
+                        <a href="{{ index_url }}">{{ root_label|trans|title }}</a>
+                    {% endif %}
+                    <div class="small text-muted">{{ resource }}</div>
+                </div>
+            </div>
+
+            <div class="d-xl-none">
+                <button
+                        class="btn btn-outline-secondary btn-sm"
+                        type="button"
+                        data-bs-toggle="offcanvas"
+                        data-bs-target="#toolboxOffcanvas"
+                        aria-controls="toolboxOffcanvas"
+                >
+                    Toolbox
+                </button>
+            </div>
+        </div>
+
+        <hr class="m-0" />
+
+        <div class="row g-0 wd-crud">
+            <div class="col-xl-8 col-12">
+                <div class="card border-end-0 border-top-0 rounded-0">
+                    <div class="card-body wd-crud-body">
+                        {% if configuration.vars.templates.component is defined and configuration.vars.templates.component is not empty %}
+                            {{ component(configuration.vars.templates.component, {
+                                initialFormData: initialFormData,
+                                formID: formID,
+                                form: form,
+                            }) }}
+                        {% else %}
+                            {% set default_form_template = metadata.name ~ '/_form.html.twig' %}
+                            {% set form_template = configuration.vars.templates.form|default(default_form_template) %}
+                            {% set form_content = include(form_template, {
+                                initialFormData: initialFormData,
+                                formID: formID,
+                                form: form,
+                            }, with_context = true, ignore_missing = true) %}
+
+                            {% if form_content is not empty %}
+                                {{ form_content }}
+                            {% else %}
+                                {{ form_start(form, { attr: {
+                                    id: formID,
+                                } }) }}
+                                {{ form_widget(form) }}
+                                {{ form_end(form) }}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-12 border-start border-top-0 border-end-0 mt-3 mt-xl-0 d-none d-xl-block">
+                {{ component('Toolbox:Toolbox', {
+                    resourceID: resource.id,
+                    resourceName: resource.__toString(),
+                    resourceType: configuration.request.attributes.get('_resource_alias'),
+                    section: configuration.parameters.get('section'),
+                    id: 'toolbox-component',
+                }) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

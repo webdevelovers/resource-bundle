@@ -13,15 +13,15 @@ use Symfony\Component\Form\FormView;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\Envelope;
-use WebDevelovers\ResourceBundle\CRUD\Create;
-use WebDevelovers\ResourceBundle\CRUD\DTOMapperInterface;
 use WebDevelovers\ResourceBundle\Controller\Parameters\Parameters;
 use WebDevelovers\ResourceBundle\Controller\RedirectHandlerInterface;
 use WebDevelovers\ResourceBundle\Controller\Renderer\RendererInterface;
+use WebDevelovers\ResourceBundle\CRUD\Create;
 use WebDevelovers\ResourceBundle\Event\ResourceActionEventDispatcherInterface;
 use WebDevelovers\ResourceBundle\Messenger\Exception\ResourceBusException;
 use WebDevelovers\ResourceBundle\Messenger\ResourceMessageBusInterface;
 use WebDevelovers\ResourceBundle\Metadata\Metadata;
+use WebDevelovers\ResourceBundle\ObjectMapper\DTOMapperInterface;
 use WebDevelovers\ResourceBundle\RequestConfiguration\RequestConfiguration;
 use WebDevelovers\ResourceBundle\ResourceInterface;
 use WebDevelovers\ResourceBundle\Security\AuthorizationCheckerInterface;
@@ -172,6 +172,8 @@ final class CreateTest extends TestCase
                 self::callback(static function (array $params): bool {
                     return $params['form_mode'] === 'dto-form'
                         && $params['is_live_component'] === true
+                        && $params['formID'] === 'product-create-form'
+                        && $params['initialFormData'] instanceof CreateDummyInput
                         && $params['input'] instanceof CreateDummyInput;
                 }),
                 Response::HTTP_UNPROCESSABLE_ENTITY,

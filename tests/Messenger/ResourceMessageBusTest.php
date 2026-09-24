@@ -68,6 +68,23 @@ final class ResourceMessageBusTest extends TestCase
         self::assertSame($dto, $capturedMessage->createData);
     }
 
+    public function testDispatchUsesDedicatedBusWhenAvailable(): void
+    {
+        $resource = new DummyResource(10);
+
+        $defaultBus = $this->createMock(MessageBusInterface::class);
+        $defaultBus->expects(self::never())->method('dispatch');
+
+        $dedicatedBus = $this->createMock(MessageBusInterface::class);
+        $dedicatedBus->expects(self::once())
+            ->method('dispatch')
+            ->willReturn(new Envelope(new CreateMessage($resource), [new HandledStamp($resource, 'create_handler')]));
+
+        $messageBus = new ResourceMessageBus($defaultBus, $dedicatedBus);
+
+        self::assertSame($resource, $messageBus->dispatchCreate($this->configuration(), $resource));
+    }
+
     /** @param array<string, mixed> $parameters */
     private function configuration(array $parameters = []): RequestConfiguration
     {

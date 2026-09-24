@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace WebDevelovers\ResourceBundle\DependencyInjection;
 
+use WebDevelovers\ResourceBundle\Messenger\Message\ApplyTransitionMessage;
+use WebDevelovers\ResourceBundle\Messenger\Message\CreateMessage;
+use WebDevelovers\ResourceBundle\Messenger\Message\DeleteMessage;
+use WebDevelovers\ResourceBundle\Messenger\Message\UpdateMessage;
+use WebDevelovers\ResourceBundle\Messenger\PersistenceMiddleware;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -37,6 +42,24 @@ final class WebDeveloversResourceExtension extends Extension implements PrependE
         $container->prependExtensionConfig('twig', [
             'paths' => [
                 $templatesPath => 'WebDeveloversResource',
+            ],
+        ]);
+
+        $container->prependExtensionConfig('framework', [
+            'messenger' => [
+                'buses' => [
+                    'wd_resource' => [
+                        'middleware' => [
+                            PersistenceMiddleware::class,
+                        ],
+                    ],
+                ],
+                'routing' => [
+                    CreateMessage::class => 'sync',
+                    UpdateMessage::class => 'sync',
+                    DeleteMessage::class => 'sync',
+                    ApplyTransitionMessage::class => 'sync',
+                ],
             ],
         ]);
 

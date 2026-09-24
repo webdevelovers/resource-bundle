@@ -21,8 +21,14 @@ use function sprintf;
 readonly class ResourceMessageBus implements ResourceMessageBusInterface
 {
     public function __construct(
-        private MessageBusInterface $wdResourceBus,
+        private MessageBusInterface $bus,
+        private ?MessageBusInterface $wdResourceBus = null,
     ) {
+    }
+
+    private function getBus(): MessageBusInterface
+    {
+        return $this->wdResourceBus ?? $this->bus;
     }
 
     /** @throws ResourceBusException|ExceptionInterface */
@@ -106,7 +112,7 @@ readonly class ResourceMessageBus implements ResourceMessageBusInterface
             params: [$subject, $configuration->metadata, $configuration->parameters],
         );
 
-        return $this->wdResourceBus->dispatch($message);
+        return $this->getBus()->dispatch($message);
     }
 
     /** @throws ExceptionInterface */
@@ -119,7 +125,7 @@ readonly class ResourceMessageBus implements ResourceMessageBusInterface
             params: [$subject, $configuration->metadata, $configuration->parameters],
         );
 
-        return $this->wdResourceBus->dispatch($message);
+        return $this->getBus()->dispatch($message);
     }
 
     /** @throws ExceptionInterface */
@@ -132,7 +138,7 @@ readonly class ResourceMessageBus implements ResourceMessageBusInterface
             params: [$resource, $configuration->metadata, $configuration->parameters],
         );
 
-        return $this->wdResourceBus->dispatch($message);
+        return $this->getBus()->dispatch($message);
     }
 
     /** @throws ResourceBusException|ExceptionInterface */
@@ -154,13 +160,13 @@ readonly class ResourceMessageBus implements ResourceMessageBusInterface
             params: [$resource, $configuration->metadata, $configuration->parameters, $graph, $transition],
         );
 
-        return $this->wdResourceBus->dispatch($message);
+        return $this->getBus()->dispatch($message);
     }
 
     /** @throws ResourceBusException|ExceptionInterface */
     private function handleMessage(object $message, bool $requireHandledResult = true): mixed
     {
-        $envelope = $this->wdResourceBus->dispatch($message);
+        $envelope = $this->getBus()->dispatch($message);
         $handledStamp = $envelope->last(HandledStamp::class);
 
         if ($handledStamp === null) {

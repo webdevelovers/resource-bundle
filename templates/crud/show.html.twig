@@ -6,7 +6,7 @@
 
 {% block content %}
 <div id="show-page" class="container-fluid px-0">
-    {% include '@WebDeveloversResource/_page_title_head.html.twig' %}
+    {# {% include '@WebDeveloversResource/_page_title_head.html.twig' %} #}
 
     {% block show_page_header %}
         {% set index_route_name = configuration.getRouteName('index') %}
@@ -110,7 +110,7 @@
             </div>
 
             <div class="col-xl-4 col-12 border-start border-top-0 border-end-0 mt-3 mt-xl-0 d-none d-xl-block">
-                {{ component('WebDeveloversResource:toolbox:Toolbox', {
+                {{ component('Toolbox:Toolbox', {
                     resourceID: resource.id,
                     resourceName: resource.__toString(),
                     resourceType: configuration.request.attributes.get('_resource_alias'),

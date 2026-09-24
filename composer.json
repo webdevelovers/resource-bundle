@@ -14,6 +14,7 @@
         "symfony/framework-bundle": "^7.4|^8.0",
         "symfony/http-kernel": "^7.4|^8.0",
         "symfony/messenger": "^8.1",
+        "symfony/object-mapper": "^8.1",
         "symfony/orm-pack": "^2.7",
         "symfony/property-access": "^7.4|^8.0",
         "symfony/routing": "^8.1",

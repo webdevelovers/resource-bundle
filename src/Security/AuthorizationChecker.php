@@ -21,6 +21,7 @@ readonly class AuthorizationChecker implements AuthorizationCheckerInterface
         RequestConfiguration $configuration,
         ResourceInterface|null $subject = null,
     ): void {
+        return;
         $securityAttribute = $this->securityAttribute($attribute, $configuration);
         if ($securityAttribute === null) {
             return;

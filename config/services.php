@@ -3,21 +3,20 @@
 declare(strict_types=1);
 
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use WebDevelovers\ResourceBundle\Action\ResourceActionCollector;
 use WebDevelovers\ResourceBundle\Audit\DoctrineTimelinePayloadExtractor;
 use WebDevelovers\ResourceBundle\Audit\DoctrineTimelineSubscriber;
 use WebDevelovers\ResourceBundle\Audit\DoctrineValueNormalizer;
 use WebDevelovers\ResourceBundle\Blame\BlameGenerator;
 use WebDevelovers\ResourceBundle\Blame\BlameGeneratorInterface;
-use WebDevelovers\ResourceBundle\Controller\RedirectHandler;
-use WebDevelovers\ResourceBundle\Controller\RedirectHandlerInterface;
+use WebDevelovers\ResourceBundle\Command\DebugResourceCommand;
 use WebDevelovers\ResourceBundle\Controller\Parameters\ParametersParser;
 use WebDevelovers\ResourceBundle\Controller\Parameters\ParametersParserInterface;
+use WebDevelovers\ResourceBundle\Controller\RedirectHandler;
+use WebDevelovers\ResourceBundle\Controller\RedirectHandlerInterface;
 use WebDevelovers\ResourceBundle\Controller\Renderer\RendererInterface;
 use WebDevelovers\ResourceBundle\Controller\Renderer\TwigRenderer;
-use WebDevelovers\ResourceBundle\CRUD\DTOMapperInterface;
-use WebDevelovers\ResourceBundle\CRUD\PropertyAccessDTOMapper;
-use WebDevelovers\ResourceBundle\Command\DebugResourceCommand;
 use WebDevelovers\ResourceBundle\Event\ResourceActionEventDispatcher;
 use WebDevelovers\ResourceBundle\Event\ResourceActionEventDispatcherInterface;
 use WebDevelovers\ResourceBundle\Index\DataProvider\DoctrineOrmIndexDataProvider;
@@ -34,13 +33,15 @@ use WebDevelovers\ResourceBundle\Index\State\IndexStateNormalizerInterface;
 use WebDevelovers\ResourceBundle\Index\View\Field\FieldRenderer;
 use WebDevelovers\ResourceBundle\Index\View\Field\FieldRendererInterface;
 use WebDevelovers\ResourceBundle\Index\View\Field\FieldValueResolver;
-use WebDevelovers\ResourceBundle\Metadata\MetadataRegistry;
-use WebDevelovers\ResourceBundle\Metadata\MetadataRegistryInterface;
+use WebDevelovers\ResourceBundle\Index\View\IndexViewFactory;
+use WebDevelovers\ResourceBundle\Index\View\IndexViewFactoryInterface;
 use WebDevelovers\ResourceBundle\Messenger\PersistenceMiddleware;
 use WebDevelovers\ResourceBundle\Messenger\ResourceMessageBus;
 use WebDevelovers\ResourceBundle\Messenger\ResourceMessageBusInterface;
-use WebDevelovers\ResourceBundle\Index\View\IndexViewFactory;
-use WebDevelovers\ResourceBundle\Index\View\IndexViewFactoryInterface;
+use WebDevelovers\ResourceBundle\Metadata\MetadataRegistry;
+use WebDevelovers\ResourceBundle\Metadata\MetadataRegistryInterface;
+use WebDevelovers\ResourceBundle\ObjectMapper\DTOMapperInterface;
+use WebDevelovers\ResourceBundle\ObjectMapper\WDDTOMapper;
 use WebDevelovers\ResourceBundle\RequestConfiguration\RequestConfigurationFactory;
 use WebDevelovers\ResourceBundle\RequestConfiguration\RequestConfigurationFactoryInterface;
 use WebDevelovers\ResourceBundle\Routing\ResourceLoader;
@@ -52,15 +53,6 @@ use WebDevelovers\ResourceBundle\Security\AuthorizationCheckerInterface;
 use WebDevelovers\ResourceBundle\Security\CurrentUserProviderInterface;
 use WebDevelovers\ResourceBundle\Security\DoctrineUserClassResolver;
 use WebDevelovers\ResourceBundle\Security\SymfonyCurrentUserProvider;
-use WebDevelovers\ResourceBundle\Twig\Extension\AttachmentExtension;
-use WebDevelovers\ResourceBundle\Twig\Extension\IndexExtension;
-use WebDevelovers\ResourceBundle\Twig\Extension\ResourceExtension;
-use WebDevelovers\ResourceBundle\Twig\Extension\ToolboxExtension;
-use WebDevelovers\ResourceBundle\Twig\Runtime\AttachmentExtensionRuntime;
-use WebDevelovers\ResourceBundle\Twig\Runtime\ResourceExtensionRuntime;
-use WebDevelovers\ResourceBundle\Toolbox\ToolboxManager;
-use WebDevelovers\ResourceBundle\Toolbox\ToolboxManagerInterface;
-use WebDevelovers\ResourceBundle\Twig\Components\Toolbox\Form\PlanActivityType;
 use WebDevelovers\ResourceBundle\Toolbox\Repository\ActivityRepository;
 use WebDevelovers\ResourceBundle\Toolbox\Repository\AttachmentRepository;
 use WebDevelovers\ResourceBundle\Toolbox\Repository\BookmarkRepository;
@@ -72,6 +64,15 @@ use WebDevelovers\ResourceBundle\Toolbox\Timeline\Formatter\MoneyValueFormatter;
 use WebDevelovers\ResourceBundle\Toolbox\Timeline\Formatter\ScalarValueFormatter;
 use WebDevelovers\ResourceBundle\Toolbox\Timeline\Formatter\TimelineValueFormatterRegistry;
 use WebDevelovers\ResourceBundle\Toolbox\Timeline\TimelineDiffPresenter;
+use WebDevelovers\ResourceBundle\Toolbox\ToolboxManager;
+use WebDevelovers\ResourceBundle\Toolbox\ToolboxManagerInterface;
+use WebDevelovers\ResourceBundle\Twig\Components\Toolbox\Form\PlanActivityType;
+use WebDevelovers\ResourceBundle\Twig\Extension\AttachmentExtension;
+use WebDevelovers\ResourceBundle\Twig\Extension\IndexExtension;
+use WebDevelovers\ResourceBundle\Twig\Extension\ResourceExtension;
+use WebDevelovers\ResourceBundle\Twig\Extension\ToolboxExtension;
+use WebDevelovers\ResourceBundle\Twig\Runtime\AttachmentExtensionRuntime;
+use WebDevelovers\ResourceBundle\Twig\Runtime\ResourceExtensionRuntime;
 use WebDevelovers\ResourceBundle\Twig\Runtime\ToolboxExtensionRuntime;
 use WebDevelovers\ResourceBundle\ValueResolver\RequestConfigurationValueResolver;
 use WebDevelovers\ResourceBundle\ValueResolver\ResourceValueResolver;
@@ -140,7 +141,7 @@ return static function (ContainerConfigurator $container): void {
     $services->set(AuthorizationChecker::class);
     $services->set(SymfonyCurrentUserProvider::class);
     $services->set(DoctrineUserClassResolver::class);
-    $services->set(PropertyAccessDTOMapper::class);
+    $services->set(WDDTOMapper::class);
 
     // Twig/Live components.
     $services->load('WebDevelovers\\ResourceBundle\\Twig\\Components\\', __DIR__ . '/../src/Twig/Components/');
@@ -154,8 +155,10 @@ return static function (ContainerConfigurator $container): void {
 
     // Events and messenger integration.
     $services->set(ResourceActionEventDispatcher::class);
-    $services->set(ResourceMessageBus::class);
+    $services->set(ResourceMessageBus::class)
+        ->arg('$wdResourceBus', service('messenger.bus.wd_resource')->nullOnInvalid());
     $services->set(PersistenceMiddleware::class);
+    $services->load('WebDevelovers\\ResourceBundle\\Messenger\\MessageHandler\\', __DIR__ . '/../src/Messenger/MessageHandler/');
 
     // Controller argument value resolvers.
     $services->set(RequestConfigurationValueResolver::class)
@@ -181,7 +184,7 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(RedirectHandlerInterface::class, RedirectHandler::class);
     $services->alias(AuthorizationCheckerInterface::class, AuthorizationChecker::class);
     $services->alias(CurrentUserProviderInterface::class, SymfonyCurrentUserProvider::class);
-    $services->alias(DTOMapperInterface::class, PropertyAccessDTOMapper::class);
+    $services->alias(DTOMapperInterface::class, WDDTOMapper::class);
     $services->alias(ResourceActionEventDispatcherInterface::class, ResourceActionEventDispatcher::class);
     $services->alias(ResourceMessageBusInterface::class, ResourceMessageBus::class);
     $services->alias(IndexRegistryInterface::class, IndexRegistry::class);

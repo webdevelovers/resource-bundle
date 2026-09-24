@@ -33,7 +33,7 @@
         ['btn-' ~ color, 'text-nowrap create-button']
     %}
     {% set label = label is empty and label is not null ? null : label|default('wd.action.create') %}
-    {% set icon = icon is empty and icon is not null ? null : icon|default('plus') %}
+    {% set icon = icon is empty and icon is not null ? null : icon|default('tabler:plus') %}
 
     {{ buttons.default(url, label, icon, class, id, extraAttrs) }}
 {% endmacro %}
@@ -118,7 +118,7 @@
         ['btn-' ~ color, 'submit-button']
     %}
     {% set label = label is empty and label is not null ? null : label|default('wd.action.submit') %}
-    {% set icon = icon is empty and icon is not null ? null : icon|default('plus') %}
+    {% set icon = icon is empty and icon is not null ? null : icon|default('tabler:plus') %}
     {% set classes = ['btn']|merge(class) %}
     {% set method = method|default('post') %}
 

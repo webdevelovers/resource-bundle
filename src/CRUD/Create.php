@@ -14,13 +14,15 @@ use WebDevelovers\ResourceBundle\Controller\Renderer\RendererInterface;
 use WebDevelovers\ResourceBundle\Event\ResourceActionEventDispatcherInterface;
 use WebDevelovers\ResourceBundle\Messenger\Exception\ResourceBusException;
 use WebDevelovers\ResourceBundle\Messenger\ResourceMessageBusInterface;
+use WebDevelovers\ResourceBundle\ObjectMapper\DTOMapperInterface;
 use WebDevelovers\ResourceBundle\RequestConfiguration\RequestConfiguration;
 use WebDevelovers\ResourceBundle\ResourceInterface;
 use WebDevelovers\ResourceBundle\Security\AuthorizationCheckerInterface;
-
 use function assert;
 use function is_array;
 use function is_bool;
+use function sprintf;
+use function str_replace;
 
 final class Create extends AbstractController
 {
@@ -78,6 +80,8 @@ final class Create extends AbstractController
                 'metadata' => $metadata,
                 'resource' => $object,
                 'input' => $object,
+                'initialFormData' => $object,
+                'formID' => $this->buildFormId($configuration, $action),
                 'action' => $action,
                 'form_mode' => $configuration->getInput() === null ? 'entity-form' : 'dto-form',
                 'is_live_component' => $this->isLiveComponentEnabled($configuration),
@@ -85,6 +89,7 @@ final class Create extends AbstractController
                 'form' => $form->createView(),
             ], $responseCode ?? Response::HTTP_OK);
         } catch (ResourceBusException|\Throwable $exception) {
+            dump($exception);
             $this->eventDispatcher->dispatch($configuration, $action, 'error', error: $exception);
             //$this->flashHelper->addErrorFlash($configuration, $resourceBusException->getMessage());
         }
@@ -108,6 +113,7 @@ final class Create extends AbstractController
 
     private function getPersistenceObject(RequestConfiguration $configuration, object $formData): ResourceInterface
     {
+        dump($formData);
         $metadata = $configuration->metadata;
         $resourceClass = $metadata->getClass('model');
         if ($configuration->getInput() === null) {
@@ -115,8 +121,9 @@ final class Create extends AbstractController
 
             return $formData;
         }
-
+        dump('mapping');
         $resource = $this->dtoMapper->mapDTOToResource($formData, $resourceClass);
+        dump($resource);
         assert($resource instanceof ResourceInterface);
 
         return $resource;
@@ -149,5 +156,12 @@ final class Create extends AbstractController
         $liveComponent = $vars['live_component'] ?? ($vars['create']['live_component'] ?? false);
 
         return $liveComponent === true;
+    }
+
+    private function buildFormId(RequestConfiguration $configuration, string $action): string
+    {
+        $metadataName = str_replace('.', '-', $configuration->metadata->name);
+
+        return sprintf('%s-%s-form', $metadataName, $action);
     }
 }

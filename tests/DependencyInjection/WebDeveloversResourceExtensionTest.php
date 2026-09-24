@@ -6,6 +6,11 @@ namespace WebDevelovers\ResourceBundle\Tests\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use WebDevelovers\ResourceBundle\Messenger\Message\ApplyTransitionMessage;
+use WebDevelovers\ResourceBundle\Messenger\Message\CreateMessage;
+use WebDevelovers\ResourceBundle\Messenger\Message\DeleteMessage;
+use WebDevelovers\ResourceBundle\Messenger\Message\UpdateMessage;
+use WebDevelovers\ResourceBundle\Messenger\PersistenceMiddleware;
 use WebDevelovers\ResourceBundle\DependencyInjection\WebDeveloversResourceExtension;
 use WebDevelovers\ResourceBundle\Toolbox\Timeline\Formatter\DoctrineRelationValueFormatter;
 use WebDevelovers\ResourceBundle\Toolbox\Timeline\Formatter\IsoDateTimeValueFormatter;
@@ -70,6 +75,26 @@ final class WebDeveloversResourceExtensionTest extends TestCase
                 ],
             ],
         ], $container->getExtensionConfig('doctrine'));
+
+        self::assertSame([
+            [
+                'messenger' => [
+                    'buses' => [
+                        'wd_resource' => [
+                            'middleware' => [
+                                PersistenceMiddleware::class,
+                            ],
+                        ],
+                    ],
+                    'routing' => [
+                        CreateMessage::class => 'sync',
+                        UpdateMessage::class => 'sync',
+                        DeleteMessage::class => 'sync',
+                        ApplyTransitionMessage::class => 'sync',
+                    ],
+                ],
+            ],
+        ], $container->getExtensionConfig('framework'));
     }
 
     public function testPrependRegistersOnlyEnabledToolboxMappings(): void

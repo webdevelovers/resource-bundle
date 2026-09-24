@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% import '@WebDeveloversResource/macro/buttons.html.twig' as buttons %}
+
+{% block content %}
+    <div id="create-page" class="container-fluid px-0">
+        {% set index_route_name = configuration.getRouteName('index') %}
+        {% set index_url = route_available(configuration, 'index')
+            ? path(
+            configuration.vars.index.route.name|default(index_route_name),
+            configuration.vars.index.route.parameters|default(configuration.vars.route.parameters|default({ })),
+        )
+            : null
+        %}
+
+        {% set formID = formID|default('resource-create-form') %}
+        {% set initialFormData = initialFormData|default(input) %}
+
+        <div class="create-page-header d-flex flex-wrap align-items-center justify-content-between gap-2 my-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="btn-group" role="group" aria-label="Actions">
+                    {{ buttons.submit('wd.action.create', null, 'success', null, 'post', null, formID, []) }}
+                    {% if index_url %}
+                        {{ buttons.cancel(index_url, 'wd.action.cancel', null, 'secondary') }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <hr class="m-0" />
+
+        <div class="row g-0 wd-crud">
+            <div class="col-xl-8 col-12">
+                <div class="card border-end-0 border-top-0 rounded-0">
+                    <div class="card-body wd-crud-body">
+                        {% if configuration.vars.templates.component is defined and configuration.vars.templates.component is not empty %}
+                            {{ component(configuration.vars.templates.component, {
+                                initialFormData: initialFormData,
+                                formID: formID,
+                                form: form,
+                            }) }}
+                        {% else %}
+                            {% set default_form_template = metadata.name ~ '/_form.html.twig' %}
+                            {% set form_template = configuration.vars.templates.form|default(default_form_template) %}
+                            {% set form_content = include(form_template, {
+                                initialFormData: initialFormData,
+                                formID: formID,
+                                form: form,
+                            }, with_context = true, ignore_missing = true) %}
+
+                            {% if form_content is not empty %}
+                                {{ form_content }}
+                            {% else %}
+                                {{ form_start(form, { attr: {
+                                    id: formID,
+                                } }) }}
+                                {{ form_widget(form) }}
+                                {{ form_end(form) }}
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
