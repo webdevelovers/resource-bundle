@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WebDevelovers\ResourceBundle\Blame;
 
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -12,6 +13,8 @@ use WebDevelovers\ResourceBundle\Security\CurrentUserProviderInterface;
 
 use function is_scalar;
 use function method_exists;
+use function str_starts_with;
+use function substr;
 
 readonly class BlameGenerator implements BlameGeneratorInterface
 {
@@ -41,8 +44,9 @@ readonly class BlameGenerator implements BlameGeneratorInterface
 
         $request = $this->requestStack->getCurrentRequest();
         $ip = $request?->getClientIp();
+        $firewall = $this->resolveFirewallName($request);
 
-        return new Blame($userID, $userIdentifier, null, $ip);
+        return new Blame($userID, $userIdentifier, $firewall, $ip);
     }
 
     private function resolveUserId(UserInterface $user): string|null
@@ -89,5 +93,26 @@ readonly class BlameGenerator implements BlameGeneratorInterface
         $ip = $this->requestStack->getCurrentRequest()?->getClientIp();
 
         return new Blame($userID, $userIdentifier, $firewall, $ip);
+    }
+
+    private function resolveFirewallName(Request|null $request): string
+    {
+        if ($request === null) {
+            return 'unknown';
+        }
+
+        $firewallContext = $request->attributes->get('_firewall_context');
+
+        if (! is_string($firewallContext) || $firewallContext === '') {
+            return 'unknown';
+        }
+
+        $prefix = 'security.firewall.map.context.';
+
+        if (str_starts_with($firewallContext, $prefix)) {
+            return substr($firewallContext, strlen($prefix));
+        }
+
+        return $firewallContext;
     }
 }

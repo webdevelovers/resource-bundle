@@ -1,0 +1,63 @@
+{% extends '@WebDeveloversResource/toolbox/timeline/base.html.twig' %}
+
+{% block blame %}
+    <div class="row justify-content-between">
+        <div class="col-auto">
+            <strong>{{ erp_toolbox_user_label(entry.blameId)|title }}</strong> - {{ entry.createdAt|date('d-m-Y H:i', 'Europe/Rome') }}
+        </div>
+        {% if is_granted('ROLE_TOOLBOX_REMOVE_NOTES') %}
+            {% set resourceId = (entry.id.toRfc4122 ?? entry.id) %}
+            {% set routeParams = { id: resourceId } %}
+
+            {% set confirmModalId = (
+                'confirm-note-delete-' ~ resourceId
+                )|replace({'.':'-', '/':'-', ':':'-', '{':'-', '}':'-'}) %}
+
+            <div class="col text-end">
+                <button
+                        type="button"
+                        class="btn btn-link p-0 m-0"
+                        role="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#{{ confirmModalId }}"
+                ><twig:ux:icon name="x"/></button>
+            </div>
+            {% set confirmMessage = action.confirmMessage|default('Sei sicuro di voler procedere?') %}
+
+            {% component BootstrapModal with { id: confirmModalId, key: confirmModalId, confirmMessage: confirmMessage, actionId: resourceId } %}
+                {% block modal_header %}
+                    <h5 class="modal-title">
+                        {{ 'wd.ui.confirm'|trans }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'wd.ui.close'|trans }}"></button>
+                {% endblock %}
+
+                {% block modal_body %}
+                    <p class="mb-0 text-left">{{ this.confirmMessage|trans }}</p>
+                {% endblock %}
+
+                {% block modal_footer %}
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        {{ 'wd.ui.cancel'|default('Annulla')|trans }}
+                    </button>
+
+                    <a
+                            class="btn btn-primary"
+                            data-action="live#action"
+                            data-live-action-param="forward"
+                            data-live-event-param="deleteTimelineEntry"
+                            data-live-id-param="{{ this.actionId }}"
+                    >
+                        {{ 'wd.ui.proceed'|default('Procedi')|trans }}
+                    </a>
+                {% endblock %}
+            {% endcomponent %}
+
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block timeline_entry_content %}
+    {{ 'wd.toolbox.timeline.added_a_note'|trans }}: <br/>
+    {{ entry.metadata['content']|raw }}
+{% endblock %}

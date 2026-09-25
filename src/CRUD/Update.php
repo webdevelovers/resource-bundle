@@ -90,6 +90,7 @@ class Update extends AbstractController
                 'form' => $form->createView(),
             ], $responseCode ?? Response::HTTP_OK);
         } catch (ResourceBusException|\Throwable $exception) {
+            dump($exception);
             $this->eventDispatcher->dispatch($configuration, $action, 'error', resource: $resource, error: $exception);
             //$this->flashHelper->addErrorFlash($configuration, $resourceBusException->getMessage());
         }

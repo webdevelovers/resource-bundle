@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace WebDevelovers\ResourceBundle\Toolbox\Timeline;
 
+use InvalidArgumentException;
 use Symfony\Component\Uid\Uuid;
+use WebDevelovers\ResourceBundle\Metadata\MetadataRegistryInterface;
 use WebDevelovers\ResourceBundle\Toolbox\Entity\TimelineEntry;
 use WebDevelovers\ResourceBundle\Toolbox\Timeline\Formatter\TimelineValueFormatterRegistry;
 
@@ -18,6 +20,7 @@ final readonly class TimelineDiffPresenter
 {
     public function __construct(
         private TimelineValueFormatterRegistry $formatterRegistry,
+        private MetadataRegistryInterface $metadataRegistry,
     ) {
     }
 
@@ -46,7 +49,7 @@ final readonly class TimelineDiffPresenter
             if ($this->isUuidCollection($old) && $this->isUuidCollection($new)) {
                 $rows[] = [
                     'field' => $field,
-                    'label' => 'wd.field.' . $field,
+                    'label' => $this->buildFieldLabel($entityClass, $field),
                     'old' => $this->formatCollectionSummary($old),
                     'new' => $this->formatCollectionSummaryWithDelta($old, $new),
                 ];
@@ -56,7 +59,7 @@ final readonly class TimelineDiffPresenter
 
             $rows[] = [
                 'field' => $field,
-                'label' => 'wd.field.' . $field,
+                'label' => $this->buildFieldLabel($entityClass, $field),
                 'old' => $this->formatterRegistry->format($entityClass, $field, $old, $entry),
                 'new' => $this->formatterRegistry->format($entityClass, $field, $new, $entry),
             ];
@@ -78,6 +81,26 @@ final readonly class TimelineDiffPresenter
         }
 
         return true;
+    }
+
+    private function buildFieldLabel(string $entityClass, string $field): string
+    {
+        try {
+            $resourceAlias = $this->metadataRegistry->getByClass($entityClass)->getAlias();
+        } catch (InvalidArgumentException) {
+            return 'wd.field.' . $field;
+        }
+
+        $resourceName = $this->extractResourceName($resourceAlias);
+
+        return sprintf('wd.resource.%s.field.%s', $resourceName, $field);
+    }
+
+    private function extractResourceName(string $resourceAlias): string
+    {
+        $parts = explode('.', $resourceAlias);
+
+        return $parts[1] ?? $resourceAlias;
     }
 
     /** @param array<int, string> $value */

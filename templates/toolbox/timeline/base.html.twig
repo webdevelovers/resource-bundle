@@ -1,0 +1,25 @@
+<div class="timeline-entry row">
+    <div class="col-auto">
+        {% set profileImage = resource_toolbox_profile_image(entry.blameId) %}
+        <img
+            src="{{ profileImage ?? 'data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><circle cx=%2216%22 cy=%2216%22 r=%2216%22 fill=%22%23e9ecef%22/><circle cx=%2216%22 cy=%2212%22 r=%226%22 fill=%22%23adb5bd%22/><path d=%22M6 28c1.7-4.6 5.5-7 10-7s8.3 2.4 10 7%22 fill=%22%23adb5bd%22/></svg>' }}"
+            width="32"
+            height="32"
+            alt="user"
+        >
+    </div>
+    <div class="col">
+        {% block blame %}
+            <div class="row">
+                <div class="col">
+                    <strong>{{ resource_toolbox_user_label(entry.blameId)|title }}</strong> - {{ entry.createdAt|date('d-m-Y H:i', 'Europe/Rome') }}
+                </div>
+            </div>
+        {% endblock %}
+        <div class="row">
+            <div class="col">
+                {% block timeline_entry_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</div>

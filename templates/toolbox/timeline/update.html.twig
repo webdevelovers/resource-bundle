@@ -1,0 +1,16 @@
+{% extends '@WebDeveloversResource/toolbox/timeline/base.html.twig' %}
+
+{% block timeline_entry_content %}
+    Record modificato:<br/>
+    {% set rows = resource_toolbox_timeline_diff_rows(entry) %}
+    <ul class="mb-0">
+        {% for row in rows %}
+            <li class="d-flex align-items-center">
+                {{ row.label|trans|capitalize }}:
+                {{ row.old }} {{ ux_icon('tabler:arrow-right') }} {{ row.new }}
+            </li>
+        {% else %}
+            <li>—</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
