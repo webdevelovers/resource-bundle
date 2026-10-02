@@ -89,7 +89,6 @@ final class Create extends AbstractController
                 'form' => $form->createView(),
             ], $responseCode ?? Response::HTTP_OK);
         } catch (ResourceBusException|\Throwable $exception) {
-            dump($exception);
             $this->eventDispatcher->dispatch($configuration, $action, 'error', error: $exception);
             //$this->flashHelper->addErrorFlash($configuration, $resourceBusException->getMessage());
         }
@@ -113,7 +112,6 @@ final class Create extends AbstractController
 
     private function getPersistenceObject(RequestConfiguration $configuration, object $formData): ResourceInterface
     {
-        dump($formData);
         $metadata = $configuration->metadata;
         $resourceClass = $metadata->getClass('model');
         if ($configuration->getInput() === null) {
@@ -121,9 +119,7 @@ final class Create extends AbstractController
 
             return $formData;
         }
-        dump('mapping');
         $resource = $this->dtoMapper->mapDTOToResource($formData, $resourceClass);
-        dump($resource);
         assert($resource instanceof ResourceInterface);
 
         return $resource;
