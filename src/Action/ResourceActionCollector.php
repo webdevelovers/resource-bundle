@@ -110,6 +110,9 @@ final class ResourceActionCollector
             $modalId = null;
             $modalInternalComponent = null;
             $modalContext = null;
+            $modalSize = null;
+            $modalBackdrop = null;
+            $modalKeyboard = null;
 
             $modal = $meta['modal'] ?? null;
             if (is_array($modal)) {
@@ -126,6 +129,18 @@ final class ResourceActionCollector
 
                 $modalContext = isset($modal['context']) && is_array($modal['context'])
                     ? $modal['context']
+                    : null;
+
+                $modalSize = isset($modal['size']) && is_string($modal['size']) && $modal['size'] !== ''
+                    ? $modal['size']
+                    : null;
+
+                $modalBackdrop = isset($modal['backdrop']) && is_string($modal['backdrop']) && $modal['backdrop'] !== ''
+                    ? $modal['backdrop']
+                    : null;
+
+                $modalKeyboard = isset($modal['keyboard']) && is_bool($modal['keyboard'])
+                    ? $modal['keyboard']
                     : null;
             }
 
@@ -145,6 +160,9 @@ final class ResourceActionCollector
                 modalId: $modalId,
                 modalInternalComponent: $modalInternalComponent,
                 modalContext: $modalContext,
+                modalSize: $modalSize,
+                modalBackdrop: $modalBackdrop,
+                modalKeyboard: $modalKeyboard,
             );
 
             $byAlias[$resourceAlias] ??= [];

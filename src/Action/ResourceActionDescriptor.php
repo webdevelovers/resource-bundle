@@ -24,6 +24,9 @@ final readonly class ResourceActionDescriptor
         public string|null $modalInternalComponent = null,
         /** @var array<string,mixed>|null */
         public array|null $modalContext = null,
+        public string|null $modalSize = null,
+        public string|null $modalBackdrop = null,
+        public bool|null $modalKeyboard = null,
     ) {
     }
 

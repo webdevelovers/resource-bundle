@@ -77,7 +77,14 @@
                         actionUrl: path(action.routeName, routeParams),
                     }) %}
 
-                    {% component BootstrapModal with { id: action.modalId, internalComponent: action.modalInternalComponent, context: modalContext } %}
+                    {% component BootstrapModal with {
+                        id: action.modalId,
+                        internalComponent: action.modalInternalComponent,
+                        context: modalContext,
+                        size: action.modalSize,
+                        backdrop: action.modalBackdrop,
+                        keyboard: action.modalKeyboard,
+                    } %}
                         {% block modal_header %}
                             <h5 class="modal-title">
                                 {% if action.icon %}
@@ -105,9 +112,9 @@
                     {% component BootstrapModal with { id: confirmModalId } %}
                         {% block modal_header %}
                             <h5 class="modal-title">
-                                {{ 'wd.ui.confirm'|trans }}
+                                {{ 'wd.action.confirm'|trans|capitalize }}
                             </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'wd.ui.close'|trans }}"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'wd.action.close'|trans|capitalize }}"></button>
                         {% endblock %}
 
                         {% block modal_body %}
@@ -116,18 +123,18 @@
 
                         {% block modal_footer %}
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                {{ 'wd.ui.cancel'|default('Annulla')|trans }}
+                                {{ 'wd.action.cancel'|trans|capitalize }}
                             </button>
 
                             {% if action.isGetOnly() %}
                                 <a class="btn btn-primary" href="{{ path(action.routeName, routeParams) }}">
-                                    {{ 'wd.ui.proceed'|default('Procedi')|trans }}
+                                    {{ 'wd.action.proceed'|trans|capitalize }}
                                 </a>
                             {% else %}
                                 <form action="{{ path(action.routeName, routeParams) }}" method="post" class="d-inline">
                                     <input type="hidden" name="_token" value="{{ csrf_token(action.routeName ~ ':' ~ resourceId) }}">
                                     <button type="submit" class="btn btn-primary">
-                                        {{ 'wd.ui.proceed'|default('Procedi')|trans }}
+                                        {{ 'wd.action.proceed'|trans|capitalize }}
                                     </button>
                                 </form>
                             {% endif %}

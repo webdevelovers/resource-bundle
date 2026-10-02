@@ -1,0 +1,53 @@
+<div {{ attributes }}>
+    <div
+        class="modal fade"
+        tabindex="-1"
+        aria-hidden="true"
+        {% if this.id %}id="{{ this.id }}"{% endif %}
+        data-controller="bootstrap-modal"
+        data-bs-backdrop="{{ this.backdrop }}"
+        data-bs-keyboard="{{ this.keyboard ? 'true' : 'false' }}"
+    >
+        <div class="modal-dialog modal-dialog-centered modal-{{ this.size }}">
+            <div class="modal-content">
+                {% block modal_full_content %}
+                    {% if this.component or this.internalComponent %}
+                        {% if this.title %}
+                            <div class="modal-header justify-content-center py-2">
+                                <h5 class="modal-title mb-0">{{ this.title|trans }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ 'wd.ui.close'|trans }}"></button>
+                            </div>
+                        {% endif %}
+                        <div class="modal-body">
+                            {% if this.component %}
+                                {% if this.componentData is not null %}
+                                    {{ component(this.component, {componentData: this.componentData}) }}
+                                {% else %}
+                                    {{ component(this.component) }}
+                                {% endif %}
+                            {% else %}
+                                {{ component(this.internalComponent, {context: this.context ?? {}}) }}
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        {% if block('modal_header') %}
+                            <div class="modal-header">
+                                {% block modal_header %}{% endblock %}
+                            </div>
+                        {% endif %}
+
+                        <div class="modal-body">
+                            {% block modal_body %}{% endblock %}
+                        </div>
+
+                        {% if block('modal_footer') %}
+                            <div class="modal-footer">
+                                {% block modal_footer %}{% endblock %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
