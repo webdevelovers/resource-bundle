@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WebDevelovers\ResourceBundle\DependencyInjection;
 
+use WebDevelovers\ResourceBundle\Action\SupportsResourceActionInterface;
 use WebDevelovers\ResourceBundle\Messenger\Message\ApplyTransitionMessage;
 use WebDevelovers\ResourceBundle\Messenger\Message\CreateMessage;
 use WebDevelovers\ResourceBundle\Messenger\Message\DeleteMessage;
@@ -98,6 +99,10 @@ final class WebDeveloversResourceExtension extends Extension implements PrependE
     public function load(array $configs, ContainerBuilder $container): void
     {
         $processedConfig = $this->processConfiguration(new Configuration(), $configs);
+
+        $container
+            ->registerForAutoconfiguration(SupportsResourceActionInterface::class)
+            ->addTag('wd.resource.resource_action_support');
 
         $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../../config'));
         $loader->load('services.php');
