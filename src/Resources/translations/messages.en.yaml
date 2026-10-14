@@ -14,7 +14,7 @@ resource:
             views: Index views
             item_actions: Item actions
         actions_header: actions
-        selected_count: '%count% selected'
+        actions: actions
         bulk_confirm: Are you sure you want to run the bulk action on %count% items?
         no_results: no results
 
@@ -32,6 +32,6 @@ wd:
             index_views: Index views
             item_actions: Item actions
             actions_header: actions
-            selected_count: '%count% selected'
+            actions: actions
             bulk_confirm: Are you sure you want to run the bulk action on %count% items?
             no_results: no results

@@ -148,6 +148,45 @@
             #}
             <div class="col-12 col-lg-4">
                 <div class="d-flex justify-content-lg-end align-items-center gap-3 flex-wrap">
+                    {% if bulkActions is not empty %}
+                        {% set bulkContext = this.getBulkContext() %}
+                        <div class="dropdown">
+                            <button
+                                type="button"
+                                class="btn btn-primary btn-sm dropdown-toggle d-inline-flex align-items-center"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                {{ 'wd.resource.index.actions'|trans|capitalize }}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                {% for action in bulkActions %}
+                                    <li>
+                                        <button
+                                            type="button"
+                                            class="dropdown-item"
+                                            data-controller="bulk-action"
+                                            data-bulk-action-url-value="{{ action.path }}"
+                                            data-bulk-action-scope-value="{{ bulkContext.scope }}"
+                                            data-bulk-action-ids-value="{{ bulkContext.ids|json_encode|e('html_attr') }}"
+                                            data-bulk-action-criteria-value="{{ bulkContext.criteria|json_encode|e('html_attr') }}"
+                                            data-bulk-action-count-value="{{ bulkContext.count }}"
+                                            data-bulk-action-requires-confirmation-value="{{ action.requiresConfirmation ? 'true' : 'false' }}"
+                                            data-bulk-action-confirm-message-value="{{ (action.confirmMessage ?? 'wd.resource.index.bulk_confirm')|trans({'%count%': bulkContext.count})|e('html_attr') }}"
+                                            data-action="click->bulk-action#execute"
+                                            {{ bulkContext.count == 0 ? 'disabled' : '' }}
+                                        >
+                                            {% if action.icon %}
+                                                {{ ux_icon(action.icon, { class: 'me-1' }) }}
+                                            {% endif %}
+                                            {{ action.label|trans }} ({{ bulkContext.count }})
+                                        </button>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
                     <div class="d-flex align-items-center gap-1 text-nowrap">
                         <div class="d-flex align-items-center gap-1">
                             <input
@@ -220,13 +259,8 @@
                                     <input
                                         type="checkbox"
                                         class="form-check-input bulk-select-checkbox"
-                                        data-action="live#action"
-                                        data-live-action-param="toggleAll"
-                                        {% set pageIsFullySelected = result.items is not empty %}
-                                        {% for item in result.items %}
-                                            {% if not this.isIdSelected(item.id) %}{% set pageIsFullySelected = false %}{% endif %}
-                                        {% endfor %}
-                                        {% if pageIsFullySelected %}checked{% endif %}
+                                        data-model="on(change)|allSelectedOnPage"
+                                        {% if this.allSelectedOnPage %}checked{% endif %}
                                     >
                                 </div>
                             </th>
@@ -266,36 +300,6 @@
                 </thead>
                 <tbody>
                 {% set selectedIdsList = this.getSelectedIdsList() %}
-                {% if this.selectedCount > 0 %}
-                    <tr class="table-info">
-                        <td colspan="{{ indexView.fields|length + (hasItemActions ? 1 : 0) + (bulkActions is not empty ? 1 : 0) }}">
-                            <div class="d-flex align-items-center justify-content-between px-2">
-                                <div>
-                                    {{ 'wd.resource.index.selected_count'|trans({'%count%': this.selectedCount}) }}
-                                </div>
-                                <div class="d-flex gap-2">
-                                    {% for action in bulkActions %}
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm {{ action.buttonClass|default('btn-primary') }}"
-                                            data-controller="bulk-action"
-                                            data-bulk-action-url-value="{{ action.path }}"
-                                            data-bulk-action-ids-value="{{ selectedIdsList|json_encode }}"
-                                            data-bulk-action-requires-confirmation-value="{{ action.requiresConfirmation ? 'true' : 'false' }}"
-                                            data-bulk-action-confirm-message-value="{{ (action.confirmMessage ?? 'wd.resource.index.bulk_confirm')|trans({'%count%': this.selectedCount})|e('html_attr') }}"
-                                            data-action="click->bulk-action#execute"
-                                        >
-                                            {% if action.icon %}
-                                                {{ ux_icon(action.icon, { class: 'me-1' }) }}
-                                            {% endif %}
-                                            {{ action.label|trans }}
-                                        </button>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                {% endif %}
                 {% for resource in result.items %}
                     {% set showRoute = this.getShowRouteFor(resource) %}
                     <tr

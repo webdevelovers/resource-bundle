@@ -21,7 +21,7 @@ wd:
                 views: Viste indice
                 item_actions: Azioni elemento
             actions_header: azioni
-            selected_count: '%count% selezionati'
+            actions: azioni
             bulk_confirm: Sei sicuro di voler procedere con l'azione massiva su %count% elementi?
             no_results: nessun risultato
         toolbox:

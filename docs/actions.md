@@ -138,6 +138,54 @@ For example, open a Bootstrap modal with an internal Symfony UX Live Component t
 )]
 ```
 
+### Bulk action on a selection
+
+```php
+#[Route(
+    path: '/subscriptions/bulk/archive',
+    name: 'wd_subscriptions_subscription_bulk_archive',
+    defaults: [
+        '_resource_alias' => 'wd.subscription',
+        '_resource_action' => [
+            'type' => ResourceActionType::BULK->value,
+            'label' => 'wd.resource.subscription.action.bulk_archive.label',
+            'icon' => 'tabler:archive',
+            'buttonClass' => 'btn btn-outline-danger',
+            'requiresConfirmation' => true,
+        ],
+        '_wd' => ['section' => 'subscriptions'],
+    ],
+    methods: ['POST'],
+)]
+```
+
+Bulk actions are rendered by the `Table` live component when at least one `bulk`
+action is available for the current resource alias (`ResourceActionCollector::forResourceAlias(..., ResourceActionType::BULK)`).
+
+Bulk actions are not rendered inside the table body: they are exposed as a
+single "Actions" dropdown in the table header, to the left of the pagination
+controls (next to the resource title/global actions on the left and the
+pagination on the right). Each dropdown entry shows the action label followed
+by the number of records it will target in parentheses (e.g. "Export to
+Excel (8)"), computed from `Table::getBulkContext()['count']`. The table still
+shows a checkbox column (with a "select all on this page" checkbox in the
+header, bound as a real `data-model` on `Table::$allSelectedOnPage` so its
+checked state is always reliably synced) backed by `selectedIds`/`selectedCount`.
+The resolved scope is:
+
+- `manual`: at least one row has been explicitly checked (`selectedIds`); the
+  bulk action targets exactly those rows.
+- `all` (default): nothing has been explicitly checked, so the action targets
+  every record matching the current criteria/filters, across all pages. In
+  this mode no explicit ids are stored: the bulk action endpoint is expected
+  to re-apply the current criteria server-side instead of relying on an
+  explicit id list.
+
+`Table::getBulkContext()` exposes this information (`scope`, `ids`, `criteria`, `count`)
+so the frontend/bulk endpoint can decide how to resolve "which records" the action
+must run on, mirroring the same `_resource_action` metadata contract (`requiresConfirmation`,
+`confirmMessage`, `buttonClass`, `icon`, ...) used by CRUD/transition/extra actions.
+
 ## CRUD as opinionated actions (and app-level overrides)
 
 The `wd.resource` loader currently generates opinionated CRUD routes and `_wd` defaults automatically.

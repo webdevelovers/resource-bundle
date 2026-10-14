@@ -10,6 +10,7 @@ use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveArg;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
+use Symfony\UX\LiveComponent\Attribute\PreReRender;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 use WebDevelovers\ResourceBundle\Action\ResourceActionCollector;
 use WebDevelovers\ResourceBundle\Action\ResourceActionDescriptor;
@@ -88,6 +89,16 @@ final class Table extends AbstractController
     #[LiveProp]
     public int $selectedCount = 0;
 
+    /**
+     * Mirrors "every item on the current page is selected" as a real writable
+     * model, so the header checkbox state is synced the same reliable way as
+     * the row checkboxes (data-model), instead of relying on the generic DOM
+     * diffing of a plain, unbound checkbox (which can keep a stale "checked"
+     * state, e.g. after "clear selection").
+     */
+    #[LiveProp(writable: true, onUpdated: 'onAllSelectedOnPageChanged')]
+    public bool $allSelectedOnPage = false;
+
     #[LiveProp(writable: true, onUpdated: 'applyPagination')]
     public int $firstItemInput = 1;
 
@@ -123,6 +134,17 @@ final class Table extends AbstractController
             $this->selectedIds = $value;
             $this->updateSelectedCount();
         }
+    }
+
+    /**
+     * Keeps the selection-related state (count, "select all on page" checkbox)
+     * fresh before every render, regardless of which action triggered it
+     * (pagination, sorting, filtering, selection, ...).
+     */
+    #[PreReRender]
+    public function refreshSelectionState(): void
+    {
+        $this->updateSelectedCount();
     }
 
     /**
@@ -442,36 +464,13 @@ final class Table extends AbstractController
         $this->syncPaginationInputs();
     }
 
-    #[LiveAction]
-    public function toggleAll(): void
+    public function onAllSelectedOnPageChanged(): void
     {
-        $result = $this->getResult();
-        $currentPageIds = [];
-        $currentPageSelectedCount = 0;
-
-        foreach ($result->items as $item) {
-            $id = '';
-            if (is_object($item)) {
-                $id = method_exists($item, 'getId') ? (string) $item->getId() : (string) ($item->id ?? '');
-            }
-            if ($id === '') {
-                continue;
-            }
-            $currentPageIds[] = $id;
-
-            if ($this->isIdSelected($id)) {
-                $currentPageSelectedCount++;
-            }
-        }
-
-        $currentPageCount = count($currentPageIds);
-        $allSelected = ($currentPageCount > 0 && $currentPageSelectedCount === $currentPageCount);
-
-        foreach ($currentPageIds as $id) {
-            if ($allSelected) {
-                unset($this->selectedIds[$id]);
-            } else {
+        foreach ($this->getCurrentPageIds() as $id) {
+            if ($this->allSelectedOnPage) {
                 $this->selectedIds[$id] = true;
+            } else {
+                unset($this->selectedIds[$id]);
             }
         }
 
@@ -481,6 +480,73 @@ final class Table extends AbstractController
     public function updateSelectedCount(): void
     {
         $this->selectedCount = count($this->getSelectedIdsList());
+        $this->allSelectedOnPage = $this->isAllSelectedOnPage();
+    }
+
+    private function isAllSelectedOnPage(): bool
+    {
+        $currentPageIds = $this->getCurrentPageIds();
+
+        if ($currentPageIds === []) {
+            return false;
+        }
+
+        foreach ($currentPageIds as $id) {
+            if (! $this->isIdSelected($id)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Serializable context describing "on which records" a bulk action must be
+     * executed, meant to be passed to the frontend/bulk action endpoint.
+     *
+     * When nothing has been explicitly selected, the default scope is "all":
+     * every record matching the current criteria/filters, across all pages.
+     *
+     * @return array<string, mixed>
+     */
+    public function getBulkContext(): array
+    {
+        if ($this->selectedCount === 0) {
+            return [
+                'scope' => 'all',
+                'ids' => [],
+                'criteria' => $this->criteria,
+                'count' => $this->getResult()->totalItems,
+            ];
+        }
+
+        return [
+            'scope' => 'manual',
+            'ids' => $this->getSelectedIdsList(),
+            'criteria' => $this->criteria,
+            'count' => $this->selectedCount,
+        ];
+    }
+
+    /** @return list<string> */
+    private function getCurrentPageIds(): array
+    {
+        $ids = [];
+
+        foreach ($this->getResult()->items as $item) {
+            $id = '';
+            if (is_object($item)) {
+                $id = method_exists($item, 'getId') ? (string) $item->getId() : (string) ($item->id ?? '');
+            }
+
+            if ($id === '') {
+                continue;
+            }
+
+            $ids[] = $id;
+        }
+
+        return $ids;
     }
 
     public function isIdSelected(string|int $id): bool
