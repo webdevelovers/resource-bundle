@@ -16,69 +16,93 @@
         'resourceType' : resourceType
     }
     %}
-    <div class="toolbox">
-        <div class="toolbox-header p-2 pt-3 d-flex justify-content-between">
-        <div class="row g-2">
-            <div class="col-auto">
-                {{ component('Toolbox:UploadAttachment', {
-                    resourceID: resourceID,
-                    resourceName: resourceName,
-                    resourceType: resourceType,
-                    section: section,
-                    id: 'upload-attachment-component'
-                }) }}
-            </div>
-            <div class="col-auto">
-                {{ component('Toolbox:AddNote', {
-                    resourceID: resourceID,
-                    resourceName: resourceName,
-                    resourceType: resourceType,
-                    section: section,
-                    id: 'add-note-component'
-                }) }}
-            </div>
-            <div class="col-auto">
-                {{ component('Toolbox:PlanActivity', {
-                    resourceID: resourceID,
-                    resourceName: resourceName,
-                    resourceType: resourceType,
-                    section: section,
-                    id: 'plan-activity-component'
-                }) }}
-            </div>
-            <div class="col-auto">
-                {{ component('Toolbox:AddBookmark', {
-                    class: 'btn btn-link toolbox-action',
-                    resourceID: resourceID,
-                    resourceName: resourceName,
-                    resourceType: resourceType,
-                    section: section,
-                    id: 'add-bookmark-component'
-                }) }}
-            </div>
-        </div>
-        <div>
-            <div role="button">
-                {{ component('Toolbox:Followers', {
-                    resourceID: resourceID,
-                    resourceName: resourceName,
-                    resourceType: resourceType,
-                    class: 'd-flex',
-                    section: section,
-                    id: 'followers-component'
-                }) }}
-            </div>
-        </div>
-    </div>
+    {% set toolbox_config = wd_resource_toolbox|default({}) %}
+    {% set toolbox_activity_enabled = toolbox_config.activity ?? true %}
+    {% set toolbox_attachment_enabled = toolbox_config.attachment ?? true %}
+    {% set toolbox_bookmark_enabled = toolbox_config.bookmark ?? true %}
+    {% set toolbox_follower_enabled = toolbox_config.follower ?? true %}
+    {% set toolbox_timeline_enabled = toolbox_config.timeline ?? true %}
+    {% set has_toolbox_header_actions = toolbox_attachment_enabled or toolbox_activity_enabled or toolbox_bookmark_enabled or toolbox_follower_enabled %}
 
-        {{ component('Toolbox:PlannedActivities', { resourceID: resourceID, resourceName: resourceName, resourceType: resourceType, section: section, id: 'planned-activities-component' }) }}
-        {{ component('Toolbox:AttachmentList', { resourceID: resourceID, resourceName: resourceName, resourceType: resourceType, section: section, id: 'attachment-list-component' }) }}
-        {{ component('Toolbox:Timeline', {
-            resourceID: resourceID,
-            resourceName: resourceName,
-            resourceType: resourceType,
-            section: section,
-            id: 'timeline-component'
-        }) }}
+    <div class="toolbox">
+        {% if has_toolbox_header_actions %}
+            <div class="toolbox-header p-2 pt-3 d-flex justify-content-between">
+                <div class="row g-2">
+                    {% if toolbox_attachment_enabled %}
+                        <div class="col-auto">
+                            {{ component('Toolbox:UploadAttachment', {
+                                resourceID: resourceID,
+                                resourceName: resourceName,
+                                resourceType: resourceType,
+                                section: section,
+                                id: 'upload-attachment-component'
+                            }) }}
+                        </div>
+                    {% endif %}
+                    {% if toolbox_activity_enabled %}
+                        <div class="col-auto">
+                            {{ component('Toolbox:AddNote', {
+                                resourceID: resourceID,
+                                resourceName: resourceName,
+                                resourceType: resourceType,
+                                section: section,
+                                id: 'add-note-component'
+                            }) }}
+                        </div>
+                        <div class="col-auto">
+                            {{ component('Toolbox:PlanActivity', {
+                                resourceID: resourceID,
+                                resourceName: resourceName,
+                                resourceType: resourceType,
+                                section: section,
+                                id: 'plan-activity-component'
+                            }) }}
+                        </div>
+                    {% endif %}
+                    {% if toolbox_bookmark_enabled %}
+                        <div class="col-auto">
+                            {{ component('Toolbox:AddBookmark', {
+                                class: 'btn btn-link toolbox-action',
+                                resourceID: resourceID,
+                                resourceName: resourceName,
+                                resourceType: resourceType,
+                                section: section,
+                                id: 'add-bookmark-component'
+                            }) }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if toolbox_follower_enabled %}
+                        <div role="button">
+                            {{ component('Toolbox:Followers', {
+                                resourceID: resourceID,
+                                resourceName: resourceName,
+                                resourceType: resourceType,
+                                class: 'd-flex',
+                                section: section,
+                                id: 'followers-component'
+                            }) }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if toolbox_activity_enabled %}
+            {{ component('Toolbox:PlannedActivities', { resourceID: resourceID, resourceName: resourceName, resourceType: resourceType, section: section, id: 'planned-activities-component' }) }}
+        {% endif %}
+        {% if toolbox_attachment_enabled %}
+            {{ component('Toolbox:AttachmentList', { resourceID: resourceID, resourceName: resourceName, resourceType: resourceType, section: section, id: 'attachment-list-component' }) }}
+        {% endif %}
+        {% if toolbox_timeline_enabled %}
+            {{ component('Toolbox:Timeline', {
+                resourceID: resourceID,
+                resourceName: resourceName,
+                resourceType: resourceType,
+                section: section,
+                id: 'timeline-component'
+            }) }}
+        {% endif %}
     </div>
 </div>

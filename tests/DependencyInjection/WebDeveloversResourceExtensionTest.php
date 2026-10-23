@@ -57,6 +57,36 @@ final class WebDeveloversResourceExtensionTest extends TestCase
                 'paths' => [
                     dirname(__DIR__, 2) . '/templates' => 'WebDeveloversResource',
                 ],
+                'globals' => [
+                    'wd_resource_crud' => [
+                        'show' => [
+                            'toolbox_mode' => 'enabled',
+                            'main_columns' => 8,
+                            'toolbox_columns' => 4,
+                            'offcanvas_width' => 560,
+                        ],
+                        'edit' => [
+                            'toolbox_mode' => 'enabled',
+                            'main_columns' => 8,
+                            'toolbox_columns' => 4,
+                            'offcanvas_width' => 560,
+                        ],
+                        'create' => [
+                            'toolbox_mode' => 'disabled',
+                            'main_columns' => 8,
+                            'toolbox_columns' => 4,
+                            'offcanvas_width' => 560,
+                        ],
+                    ],
+                    'wd_resource_toolbox' => [
+                        'auditing' => true,
+                        'activity' => true,
+                        'attachment' => true,
+                        'bookmark' => true,
+                        'follower' => true,
+                        'timeline' => true,
+                    ],
+                ],
             ],
         ], $container->getExtensionConfig('twig'));
 
@@ -186,6 +216,132 @@ final class WebDeveloversResourceExtensionTest extends TestCase
         $extension->prepend($container);
 
         self::assertSame([], $container->getExtensionConfig('doctrine'));
+    }
+
+    public function testPrependRegistersCustomCrudLayoutInTwigGlobals(): void
+    {
+        $container = new ContainerBuilder();
+        $extension = new WebDeveloversResourceExtension();
+
+        $container->prependExtensionConfig($extension->getAlias(), [
+            'crud' => [
+                'show' => [
+                    'toolbox_mode' => 'offcanvas',
+                    'main_columns' => 9,
+                    'toolbox_columns' => 3,
+                    'offcanvas_width' => 680,
+                ],
+                'edit' => [
+                    'toolbox_mode' => 'disabled',
+                    'main_columns' => 12,
+                    'toolbox_columns' => 4,
+                    'offcanvas_width' => 560,
+                ],
+                'create' => [
+                    'toolbox_mode' => 'enabled',
+                    'main_columns' => 7,
+                    'toolbox_columns' => 5,
+                    'offcanvas_width' => 520,
+                ],
+            ],
+        ]);
+
+        $extension->prepend($container);
+
+        self::assertSame([
+            [
+                'paths' => [
+                    dirname(__DIR__, 2) . '/templates' => 'WebDeveloversResource',
+                ],
+                'globals' => [
+                    'wd_resource_crud' => [
+                        'show' => [
+                            'toolbox_mode' => 'offcanvas',
+                            'main_columns' => 9,
+                            'toolbox_columns' => 3,
+                            'offcanvas_width' => 680,
+                        ],
+                        'edit' => [
+                            'toolbox_mode' => 'disabled',
+                            'main_columns' => 12,
+                            'toolbox_columns' => 4,
+                            'offcanvas_width' => 560,
+                        ],
+                        'create' => [
+                            'toolbox_mode' => 'enabled',
+                            'main_columns' => 7,
+                            'toolbox_columns' => 5,
+                            'offcanvas_width' => 520,
+                        ],
+                    ],
+                    'wd_resource_toolbox' => [
+                        'auditing' => true,
+                        'activity' => true,
+                        'attachment' => true,
+                        'bookmark' => true,
+                        'follower' => true,
+                        'timeline' => true,
+                    ],
+                ],
+            ],
+        ], $container->getExtensionConfig('twig'));
+    }
+
+    public function testPrependRegistersCustomToolboxFlagsInTwigGlobals(): void
+    {
+        $container = new ContainerBuilder();
+        $extension = new WebDeveloversResourceExtension();
+
+        $container->prependExtensionConfig($extension->getAlias(), [
+            'toolbox' => [
+                'auditing' => false,
+                'activity' => false,
+                'attachment' => true,
+                'bookmark' => false,
+                'follower' => false,
+                'timeline' => false,
+            ],
+        ]);
+
+        $extension->prepend($container);
+
+        self::assertSame([
+            [
+                'paths' => [
+                    dirname(__DIR__, 2) . '/templates' => 'WebDeveloversResource',
+                ],
+                'globals' => [
+                    'wd_resource_crud' => [
+                        'show' => [
+                            'toolbox_mode' => 'enabled',
+                            'main_columns' => 8,
+                            'toolbox_columns' => 4,
+                            'offcanvas_width' => 560,
+                        ],
+                        'edit' => [
+                            'toolbox_mode' => 'enabled',
+                            'main_columns' => 8,
+                            'toolbox_columns' => 4,
+                            'offcanvas_width' => 560,
+                        ],
+                        'create' => [
+                            'toolbox_mode' => 'disabled',
+                            'main_columns' => 8,
+                            'toolbox_columns' => 4,
+                            'offcanvas_width' => 560,
+                        ],
+                    ],
+                    'wd_resource_toolbox' => [
+                        'auditing' => false,
+                        'activity' => false,
+                        'attachment' => true,
+                        'bookmark' => false,
+                        'follower' => false,
+                        'timeline' => false,
+                    ],
+                ],
+            ],
+        ], $container->getExtensionConfig('twig'));
     }
 
     public function testLoadRemovesAuditingServicesWhenAuditingIsDisabled(): void

@@ -34,6 +34,7 @@ final class WebDeveloversResourceExtension extends Extension implements PrependE
         $configs = $container->getExtensionConfig($this->getAlias());
         $processedConfig = $this->processConfiguration(new Configuration(), $configs);
         $toolboxConfig = $processedConfig['toolbox'];
+        $crudConfig = $processedConfig['crud'];
         if ($toolboxConfig['auditing'] === true) {
             $toolboxConfig['timeline'] = true;
         }
@@ -43,6 +44,10 @@ final class WebDeveloversResourceExtension extends Extension implements PrependE
         $container->prependExtensionConfig('twig', [
             'paths' => [
                 $templatesPath => 'WebDeveloversResource',
+            ],
+            'globals' => [
+                'wd_resource_crud' => $crudConfig,
+                'wd_resource_toolbox' => $processedConfig['toolbox'],
             ],
         ]);
 

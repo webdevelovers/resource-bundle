@@ -40,6 +40,8 @@
         {% set metadata_index_permission = configuration.metadata.name ~ '_index' %}
         {% set metadata_update_permission = configuration.metadata.name ~ '_update' %}
         {% set metadata_delete_permission = configuration.metadata.name ~ '_delete' %}
+        {% set crud_layout = wd_resource_crud.show|default({}) %}
+        {% set toolbox_mode = crud_layout.toolbox_mode|default('enabled') %}
 
         <div class="show-page-header d-flex flex-wrap align-items-center justify-content-between gap-2 my-2">
             <div class="d-flex align-items-center gap-2">
@@ -68,7 +70,8 @@
 
             {# {{ component('WebDeveloversResource:toolbox:Bookmarks') }} #}
 
-            <div class="d-xl-none">
+            {% if toolbox_mode == 'offcanvas' %}
+            <div>
                 <button
                         class="btn btn-outline-secondary btn-sm"
                         type="button"
@@ -76,16 +79,31 @@
                         data-bs-target="#toolboxOffcanvas"
                         aria-controls="toolboxOffcanvas"
                 >
-                    Toolbox
+                    ⚙ Strumenti
                 </button>
             </div>
+            {% endif %}
         </div>
     {% endblock %}
 
     <hr class="m-0" />
     {% block show_page_content %}
+        {% set crud_layout = wd_resource_crud.show|default({}) %}
+        {% set toolbox_mode = crud_layout.toolbox_mode|default('enabled') %}
+        {% set main_columns = crud_layout.main_columns|default(8) %}
+        {% set toolbox_columns = crud_layout.toolbox_columns|default(4) %}
+        {% set offcanvas_width = crud_layout.offcanvas_width|default(560) %}
+        {% set main_col_class = toolbox_mode == 'offcanvas' ? 'col-12' : 'col-xl-' ~ main_columns ~ ' col-12' %}
+        {% set toolbox_col_class = 'col-xl-' ~ toolbox_columns ~ ' col-12 border-start border-top-0 border-end-0 mt-3 mt-xl-0 d-none d-xl-block' %}
+        {% set toolbox_context = {
+            resourceID: resource.id,
+            resourceName: resource.__toString(),
+            resourceType: configuration.request.attributes.get('_resource_alias'),
+            section: configuration.parameters.get('section'),
+            id: 'toolbox-component',
+        } %}
         <div class="row g-0 wd-crud">
-            <div class="col-xl-8 col-12">
+            <div class="{{ main_col_class }}">
                 {% set resourceAlias = configuration.request.attributes.get('_resource_alias') %}
                 {% set transitionActions = resource_actions(resource, configuration, resourceAlias, 'transition') %}
                 {% set extraActions = resource_actions(resource, configuration, resourceAlias, 'extra') %}
@@ -109,15 +127,21 @@
                 </div>
             </div>
 
-            <div class="col-xl-4 col-12 border-start border-top-0 border-end-0 mt-3 mt-xl-0 d-none d-xl-block">
-                {{ component('Toolbox:Toolbox', {
-                    resourceID: resource.id,
-                    resourceName: resource.__toString(),
-                    resourceType: configuration.request.attributes.get('_resource_alias'),
-                    section: configuration.parameters.get('section'),
-                    id: 'toolbox-component',
-                }) }}
-            </div>
+            {% if toolbox_mode == 'enabled' %}
+                <div class="{{ toolbox_col_class }}">
+                    {{ component('Toolbox:Toolbox', toolbox_context) }}
+                </div>
+            {% elseif toolbox_mode == 'offcanvas' %}
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="toolboxOffcanvas" aria-labelledby="toolboxOffcanvasLabel" data-bs-backdrop="true" data-bs-keyboard="false" style="--bs-offcanvas-width: {{ offcanvas_width }}px;--theme-offcanvas-width: {{ offcanvas_width }}px">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="toolboxOffcanvasLabel">Strumenti</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body p-0">
+                        {{ component('Toolbox:Toolbox', toolbox_context) }}
+                    </div>
+                </div>
+            {% endif %}
         </div>
     {% endblock %}
 </div>
