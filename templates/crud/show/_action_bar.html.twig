@@ -18,7 +18,7 @@
                             data-bs-target="#{{ action.modalId }}"
                         >
                             {% if action.icon %}
-                                <twig:ux:icon name="{{ action.icon }}" />
+                                <twig:ux:icon name="{{ action.icon }}" class="me-1" />
                             {% endif %}
                             {{ action.label|trans|title }}
                         </button>
@@ -30,7 +30,7 @@
                             data-bs-target="#{{ confirmModalId }}"
                         >
                             {% if action.icon %}
-                                <twig:ux:icon name="{{ action.icon }}" />
+                                <twig:ux:icon name="{{ action.icon }}" class="me-1" />
                             {% endif %}
                             {{ action.label|trans|title }}
                         </button>
@@ -41,7 +41,7 @@
                             href="{{ path(action.routeName, routeParams) }}"
                         >
                             {% if action.icon %}
-                                <twig:ux:icon name="{{ action.icon }}" />
+                                <twig:ux:icon name="{{ action.icon }}" class="me-1" />
                             {% endif %}
                             {{ action.label|trans|title }}
                         </a>
@@ -50,7 +50,7 @@
                             <input type="hidden" name="_token" value="{{ csrf_token(action.routeName ~ ':' ~ resourceId) }}">
                             <button type="submit" class="{{ action.buttonClass|default('btn btn-secondary') }}">
                                 {% if action.icon %}
-                                    <twig:ux:icon name="{{ action.icon }}" />
+                                    <twig:ux:icon name="{{ action.icon }}" class="me-1" />
                                 {% endif %}
                                 {{ action.label|trans|title }}
                             </button>
@@ -88,7 +88,7 @@
                         {% block modal_header %}
                             <h5 class="modal-title">
                                 {% if action.icon %}
-                                    <twig:ux:icon name="{{ action.icon }}" />
+                                    <twig:ux:icon name="{{ action.icon }}" class="me-1" />
                                 {% endif %}
                                 {{ action.label|trans|title }}
                             </h5>

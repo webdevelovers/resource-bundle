@@ -43,7 +43,7 @@
         <div class="update-page-header d-flex flex-wrap align-items-center justify-content-between gap-2 my-2">
             <div class="d-flex align-items-center gap-2">
                 <div class="btn-group" role="group" aria-label="Actions">
-                    {{ buttons.submit('wd.action.update', null, 'warning', null, 'post', null, formID, []) }}
+                    {{ buttons.submit('wd.action.save', null, 'warning', null, 'post', null, formID, []) }}
                     {% if show_url %}
                         {{ buttons.cancel(show_url, 'wd.action.cancel', null, 'secondary') }}
                     {% elseif index_url %}
