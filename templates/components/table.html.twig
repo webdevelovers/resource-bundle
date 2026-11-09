@@ -1,7 +1,6 @@
 <div {{ attributes }}>
     {% set result = this.result %}
     {% set indexView = this.indexView %}
-    {% set definition = this.definition %}
     {% set hasItemActions = this.hasItemActions %}
     {% set bulkActions = this.bulkActions %}
     {% set resourceName = this.routeNamePrefix %}
@@ -32,120 +31,17 @@
                 </div>
             </div>
 
-            {#
-            <div class="col-12 col-lg-5">
-                <div
-                    class="card card-body p-2 mb-0"
-                    data-controller="resource-index-filters"
-                    data-resource-index-filters-definitions-value="{{ filterDefinitions|json_encode|e('html_attr') }}"
-                    data-resource-index-filters-draft-version-value="{{ this.draftVersion }}"
-                >
-                    <div class="d-flex flex-wrap gap-2 align-items-end">
-                        <div class="flex-grow-1">
-                            <select
-                                class="form-select"
-                                data-resource-index-filters-target="field"
-                                data-action="change->resource-index-filters#onFieldChange"
-                                data-model="draftField"
-                            >
-                                <option value="">-- seleziona filtro --</option>
-                                {% for filter in definition.filters %}
-                                    <option value="{{ filter.name }}">{{ filter.label ?? filter.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div style="min-width: 140px;">
-                            <select
-                                class="form-select"
-                                data-resource-index-filters-target="operator"
-                                data-model="draftOperator"
-                            >
-                                <option value="contains">Contiene</option>
-                                <option value="equals">Uguale</option>
-                                <option value="not_equals">Diverso</option>
-                                <option value="gte">Da</option>
-                                <option value="lte">A</option>
-                                <option value="in">In</option>
-                            </select>
-                        </div>
-
-                        <div class="flex-grow-1">
-                                <div
-                                    data-resource-index-filters-target="valueContainer"
-                                    data-action="keydown->resource-index-filters#onValueKeydown"
-                                ></div>
-                                <input type="hidden" data-model="draftValue">
-                            </div>
-
-                            <div class="d-flex gap-2">
-                                <button
-                                    type="button"
-                                    class="btn btn-primary"
-                                    data-resource-index-filters-target="addButton"
-                                    data-action="live#action"
-                                    data-live-action-param="addCriterion"
-                            >
-                                Cerca
-                            </button>
-
-                            <button
-                                type="button"
-                                class="btn btn-outline-secondary"
-                                data-action="live#action"
-                                data-live-action-param="resetCriteria"
-                            >
-                                Reset
-                            </button>
-                        </div>
-                    </div>
-                    {% if this.criteria is not empty %}
-                        <div class="mt-1 d-flex flex-wrap gap-2">
-                            {% for criterion in this.criteria %}
-                                {% set currentFilter = definition.filters[criterion.field] ?? null %}
-                                {% set isBooleanCriterion = currentFilter is not null and currentFilter.type == 'boolean' %}
-                                <span class="badge text-bg-primary d-inline-flex align-items-center gap-2">
-                                <span>
-                                    {% if isBooleanCriterion %}
-                                        {% set fieldLabel = currentFilter.label ?? criterion.field %}
-                                        {% set operatorLabel = criterion.operator == 'not_equals' ? 'non è' : 'è' %}
-                                        {% set booleanLabel =
-                                            (criterion.value is same as(true) or criterion.value == '1')
-                                            ? 'Sì'
-                                            : ((criterion.value is same as(false) or criterion.value == '0') ? 'No' : '—')
-                                        %}
-                                        {{ fieldLabel }} {{ operatorLabel }} {{ booleanLabel }}
-                                    {% else %}
-                                        {% set fieldName = 'wd.resource.' ~ resourceName ~ '.field.' ~ criterion.field %}
-                                        {% set operatorName = 'wd.index.' ~ criterion.operator %}
-                                        {% set criterionValue = criterion.display_value ?? criterion.value %}
-                                        {% set displayValue = criterionValue %}
-                                        {% if criterionValue is iterable is same as(false) and (criterionValue matches '/^\\{.*\\}$/' or criterionValue matches '/^\\[.*\\]$/') %}
-                                            {% set decoded = criterionValue|json_decode %}
-                                            {% if decoded.label is defined %}
-                                                {% set displayValue = decoded.label is iterable ? decoded.label|join(', ') : decoded.label %}
-                                            {% elseif decoded.value is defined %}
-                                                {% set displayValue = decoded.value is iterable ? decoded.value|join(', ') : decoded.value %}
-                                            {% endif %}
-                                        {% endif %}
-                                        {{ fieldName|trans|capitalize }} {{ operatorName|trans }} "{{ displayValue is same as(true) ? 'true' : displayValue is same as(false) ? 'false' : displayValue }}"
-                                    {% endif %}
-                                </span>
-                                <button
-                                    type="button"
-                                    class="btn-close btn-close-white"
-                                    aria-label="Rimuovi filtro"
-                                    data-action="live#action"
-                                    data-live-action-param="removeCriterion"
-                                    data-live-index-param="{{ loop.index0 }}"
-                                ></button>
-                            </span>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
+            <div class="col-12 col-lg-5 my-2 my-lg-0">
+                {# Standalone, reusable search component: see IndexSearch, which only
+                   receives the index name + initial criteria and communicates back
+                   by emitting an "index_search:changed" event (listened to below). #}
+                {{ component('resource_crud_index_search', {
+                    index: this.index,
+                    resourceName: resourceName,
+                    criteria: this.criteria,
+                }) }}
             </div>
-            #}
+
             <div class="col-12 col-lg-4">
                 <div class="d-flex justify-content-lg-end align-items-center gap-3 flex-wrap">
                     {% if bulkActions is not empty %}

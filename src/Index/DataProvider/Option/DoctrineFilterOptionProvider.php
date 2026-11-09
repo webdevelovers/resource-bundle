@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace WebDevelovers\ResourceBundle\Index\DataProvider\Option;
 
+use BackedEnum;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use WebDevelovers\ResourceBundle\Index\Definition\IndexDefinitionInterface;
 
 use function array_map;
 use function array_values;
+use function enum_exists;
 use function in_array;
 use function is_array;
 use function is_string;
@@ -24,6 +28,7 @@ final readonly class DoctrineFilterOptionProvider implements FilterOptionProvide
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -50,6 +55,7 @@ final readonly class DoctrineFilterOptionProvider implements FilterOptionProvide
         return match ($type) {
             'choice' => $this->getChoiceOptions($options, $query, $selected),
             'entity' => $this->getEntityOptions($options, $query, $selected),
+            'enum' => $this->getEnumOptions($options, $query, $selected),
             default => [],
         };
     }
@@ -173,6 +179,62 @@ final readonly class DoctrineFilterOptionProvider implements FilterOptionProvide
         }
 
         return array_values($result);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     * @param array<string> $selected
+     *
+     * @return array<int, array{value: string, label: string}>
+     */
+    private function getEnumOptions(array $options, string $query, array $selected): array
+    {
+        $enumClass = $options['enum_class'] ?? null;
+
+        if (! is_string($enumClass) || $enumClass === '' || ! enum_exists($enumClass)) {
+            return [];
+        }
+
+        $query = mb_strtolower($query);
+
+        $result = [];
+
+        foreach ($enumClass::cases() as $case) {
+            if (! $case instanceof BackedEnum) {
+                continue;
+            }
+
+            $value = (string) $case->value;
+            $label = $this->resolveEnumLabel($case);
+
+            if (
+                $query !== '' &&
+                ! str_contains(mb_strtolower($label), $query) &&
+                ! str_contains(mb_strtolower($value), $query)
+            ) {
+                continue;
+            }
+
+            $result[] = [
+                'value' => $value,
+                'label' => $label,
+            ];
+        }
+
+        return array_values($result);
+    }
+
+    private function resolveEnumLabel(BackedEnum $case): string
+    {
+        if ($case instanceof TranslatableInterface) {
+            return $case->trans($this->translator);
+        }
+
+        if (method_exists($case, 'label')) {
+            return (string) $case->label();
+        }
+
+        return (string) $case->value;
     }
 
     private function resolveLabel(object $item, mixed $labelProperty): string

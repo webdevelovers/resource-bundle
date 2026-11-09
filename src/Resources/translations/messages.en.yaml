@@ -17,6 +17,28 @@ resource:
         actions: actions
         bulk_confirm: Are you sure you want to run the bulk action on %count% items?
         no_results: no results
+        search:
+            placeholder: search...
+            filters: filters
+            select_filter_hint: select a filter to set its value
+            choose_value: choose a value
+            apply: apply
+            cancel: cancel
+            clear_all: clear all filters
+            remove_filter: remove filter
+            edit_filter: click to edit this filter
+            value:
+                yes: yes
+                no: no
+            operator:
+                contains: contains
+                equals: equals
+                not_equals: not equals
+                starts_with: starts with
+                ends_with: ends with
+                in: in
+                gte: from
+                lte: to
 
 wd:
     action:

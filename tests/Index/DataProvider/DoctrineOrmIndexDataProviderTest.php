@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace WebDevelovers\ResourceBundle\Tests\Index\DataProvider;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\QueryBuilder;
 use PHPUnit\Framework\TestCase;
@@ -42,6 +43,15 @@ final class DoctrineOrmIndexDataProviderTest extends TestCase
             ->method('createQueryBuilder')
             ->willReturnOnConsecutiveCalls($mainQueryBuilder, $countQueryBuilder);
 
+        $classMetadata = $this->createMock(ClassMetadata::class);
+        $classMetadata->method('hasField')->with('name')->willReturn(true);
+        $classMetadata->method('getTypeOfField')->with('name')->willReturn('string');
+
+        $entityManager
+            ->method('getClassMetadata')
+            ->with(DummyProduct::class)
+            ->willReturn($classMetadata);
+
         $definition = new IndexDefinition(
             name: 'wd.product_index',
             resourceClass: DummyProduct::class,
@@ -74,6 +84,74 @@ final class DoctrineOrmIndexDataProviderTest extends TestCase
         self::assertSame('Prodotto Alpha', $result->items[0]->name);
     }
 
+    public function testProvideCastsNonStringColumnBeforeApplyingTextOperators(): void
+    {
+        $mainQuery = $this->createMock(Query::class);
+        $mainQuery->method('getResult')->willReturn([]);
+
+        $countQuery = $this->createMock(Query::class);
+        $countQuery->method('getSingleScalarResult')->willReturn('0');
+
+        $mainQueryBuilder = $this->createQueryBuilderMock($mainQuery);
+        $countQueryBuilder = $this->createQueryBuilderMock($countQuery);
+
+        $capturedConditions = [];
+        foreach ([$mainQueryBuilder, $countQueryBuilder] as $queryBuilder) {
+            $queryBuilder
+                ->method('andWhere')
+                ->willReturnCallback(static function (string $condition) use ($queryBuilder, &$capturedConditions) {
+                    $capturedConditions[] = $condition;
+
+                    return $queryBuilder;
+                });
+        }
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager
+            ->method('createQueryBuilder')
+            ->willReturnOnConsecutiveCalls($mainQueryBuilder, $countQueryBuilder);
+
+        $classMetadata = $this->createMock(ClassMetadata::class);
+        $classMetadata->method('hasField')->with('code')->willReturn(true);
+        $classMetadata->method('getTypeOfField')->with('code')->willReturn('integer');
+
+        $entityManager
+            ->method('getClassMetadata')
+            ->with(DummyIntCodeEntity::class)
+            ->willReturn($classMetadata);
+
+        $definition = new IndexDefinition(
+            name: 'wd.int_code_index',
+            resourceClass: DummyIntCodeEntity::class,
+            filters: [
+                'code' => new TextFilter('code', field: 'code'),
+            ],
+            views: [
+                'table' => new IndexViewDefinition('table', 'table'),
+            ],
+        );
+
+        $state = new IndexState(
+            criteria: [
+                ['field' => 'code', 'operator' => 'contains', 'value' => '123'],
+            ],
+            perPage: 25,
+        );
+
+        $provider = new DoctrineOrmIndexDataProvider($entityManager);
+        $provider->provide($definition, $state);
+
+        self::assertNotEmpty($capturedConditions);
+
+        foreach ($capturedConditions as $condition) {
+            // The integer column must be wrapped with a CONCAT(...) cast
+            // before LOWER()/LIKE are applied to it, otherwise PostgreSQL
+            // raises "function lower(integer) does not exist".
+            self::assertStringNotContainsString('LOWER(resource.code)', $condition);
+            self::assertStringContainsString("CONCAT('', resource.code)", $condition);
+        }
+    }
+
     private function createQueryBuilderMock(Query $query): QueryBuilder
     {
         $queryBuilder = $this->createMock(QueryBuilder::class);
@@ -99,5 +177,9 @@ final class DummyProduct
 }
 
 final class DummyCategory
+{
+}
+
+final class DummyIntCodeEntity
 {
 }

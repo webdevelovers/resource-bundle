@@ -15,6 +15,7 @@ use WebDevelovers\ResourceBundle\Index\State\IndexState;
 
 use function count;
 use function explode;
+use function in_array;
 use function is_array;
 use function is_bool;
 use function is_int;
@@ -175,6 +176,14 @@ final readonly class DoctrineOrmIndexDataProvider implements IndexDataProviderIn
             }
         }
 
+        if ($filterType === 'enum' || $filterType === 'choice') {
+            $normalizedOperator = strtolower($operator);
+
+            if ($normalizedOperator !== 'equals' && $normalizedOperator !== 'not_equals' && $normalizedOperator !== 'in') {
+                $operator = 'equals';
+            }
+        }
+
         if ($filterType === 'boolean') {
             $normalizedOperator = strtolower($operator);
 
@@ -198,6 +207,11 @@ final readonly class DoctrineOrmIndexDataProvider implements IndexDataProviderIn
 
         $parameterName = sprintf('criterion_%s_%d', str_replace('.', '_', $field), $index);
         $expressionPath = $this->resolvePathExpression($queryBuilder, $path);
+
+        if ($filterType === 'text' && $this->needsStringCast($definition, $path)) {
+            $expressionPath = sprintf("CONCAT('', %s)", $expressionPath);
+        }
+
         $fieldExpression = $this->normalizeExpression($expressionPath, $caseInsensitive);
         $parameterValue = $this->normalizeValue($value, $caseInsensitive);
 
@@ -330,6 +344,55 @@ final readonly class DoctrineOrmIndexDataProvider implements IndexDataProviderIn
         }
 
         $queryBuilder->leftJoin($join, $joinAlias);
+    }
+
+    /**
+     * Whether the underlying database column behind a "text" filter is NOT
+     * a textual type (e.g. an integer/numeric column). In that case string
+     * operators (LIKE, LOWER, ...) must not be applied directly to it,
+     * otherwise platforms like PostgreSQL raise "function does not exist"
+     * (e.g. "lower(integer) does not exist").
+     */
+    private function needsStringCast(IndexDefinitionInterface $definition, string $path): bool
+    {
+        $resourceClass = $definition->getResourceClass();
+
+        if ($resourceClass === null) {
+            return false;
+        }
+
+        $type = $this->resolveFieldDoctrineType($resourceClass, $path);
+
+        if ($type === null) {
+            return false;
+        }
+
+        return ! in_array($type, ['string', 'text', 'ascii_string', 'guid'], true);
+    }
+
+    private function resolveFieldDoctrineType(string $resourceClass, string $path): string|null
+    {
+        $metadata = $this->entityManager->getClassMetadata($resourceClass);
+        $parts = explode('.', $path);
+        $lastIndex = count($parts) - 1;
+
+        foreach ($parts as $index => $part) {
+            if ($index === $lastIndex) {
+                if (! $metadata->hasField($part)) {
+                    return null;
+                }
+
+                return $metadata->getTypeOfField($part);
+            }
+
+            if (! $metadata->hasAssociation($part)) {
+                return null;
+            }
+
+            $metadata = $this->entityManager->getClassMetadata($metadata->getAssociationTargetClass($part));
+        }
+
+        return null;
     }
 
     private function normalizeExpression(string $expression, bool $caseInsensitive): string

@@ -1,0 +1,214 @@
+<div {{ attributes }} class="dropdown wd-index-search">
+    {% set definition = this.definition %}
+
+    <style>
+        .wd-index-search-criterion { padding: 0 !important; overflow: hidden; }
+        .wd-index-search-criterion-label {
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+            padding: .25rem .5rem;
+        }
+        .wd-index-search-criterion-edit {
+            display: inline-flex;
+            align-items: center;
+            padding: .25rem .4rem;
+            opacity: .55;
+            cursor: pointer;
+            transition: opacity .15s ease-in-out;
+        }
+        .wd-index-search-criterion-edit:hover,
+        .wd-index-search-criterion-edit:focus-visible { opacity: 1; }
+        .wd-index-search-criterion-remove-wrapper {
+            display: inline-flex;
+            align-items: center;
+            padding: .25rem .5rem;
+            border-left: 1px solid rgba(0, 0, 0, .15);
+            background-color: rgba(0, 0, 0, .06);
+            transition: background-color .15s ease-in-out;
+            cursor: pointer;
+        }
+        .wd-index-search-criterion-remove-wrapper:hover,
+        .wd-index-search-criterion-remove-wrapper:focus-within { background-color: rgba(0, 0, 0, .12); }
+        .wd-index-search-criterion-remove { opacity: .55; transition: opacity .15s ease-in-out, transform .1s ease-in-out; border-radius: 50%; }
+        .wd-index-search-criterion-remove-wrapper:hover .wd-index-search-criterion-remove,
+        .wd-index-search-criterion-remove-wrapper:focus-within .wd-index-search-criterion-remove { opacity: 1; }
+        .wd-index-search-criterion-remove-wrapper:active .wd-index-search-criterion-remove { transform: scale(0.85); }
+    </style>
+
+    <div
+        class="form-control d-flex flex-wrap align-items-center gap-1 wd-index-search-input"
+        data-bs-toggle="dropdown"
+        data-bs-auto-close="outside"
+        aria-expanded="false"
+        role="button"
+    >
+        {% for criterion in this.criteria %}
+            {% set criterionField = criterion.field %}
+            {% set criterionLabelKey = 'wd.resource.' ~ resourceName ~ '.field.' ~ criterionField %}
+            <span
+                class="badge rounded-pill text-bg-light border d-inline-flex align-items-center p-0 wd-index-search-criterion"
+            >
+                <span class="wd-index-search-criterion-label">
+                    <span class="fw-semibold">{{ criterionLabelKey|trans|capitalize }}:</span>
+                    <span>{{ this.getCriterionDisplayValue(criterion)|trans|capitalize }}</span>
+                </span>
+                {# <span
+                    class="wd-index-search-criterion-edit"
+                    role="button"
+                    tabindex="0"
+                    title="{{ 'wd.resource.index.search.edit_filter'|trans|capitalize }}"
+                    aria-label="{{ 'wd.resource.index.search.edit_filter'|trans|capitalize }}"
+                    data-action="live#action:stop"
+                    data-live-action-param="editCriterion"
+                    data-live-index-param="{{ loop.index0 }}"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                    </svg>
+                </span> #}
+                <span
+                    class="wd-index-search-criterion-remove-wrapper"
+                    role="button"
+                    tabindex="0"
+                    title="{{ 'wd.resource.index.search.remove_filter'|trans|capitalize }}"
+                    aria-label="{{ 'wd.resource.index.search.remove_filter'|trans|capitalize }}"
+                    data-action="click->live#action:stop"
+                    data-live-action-param="removeCriterion"
+                    data-live-index-param="{{ loop.index0 }}"
+                >
+                    <button
+                        type="button"
+                        class="btn-close wd-index-search-criterion-remove"
+                        style="font-size: 0.6rem; pointer-events: none;"
+                        tabindex="-1"
+                        aria-hidden="true"
+                    ></button>
+                </span>
+            </span>
+        {% else %}
+            <span class="text-muted">{{ 'wd.resource.index.search.placeholder'|trans|capitalize }}</span>
+        {% endfor %}
+    </div>
+
+    <div class="dropdown-menu p-3 wd-index-search-menu" style="min-width: 28rem;">
+        <div class="row g-3">
+            <div class="col-5">
+                <div class="small text-uppercase text-muted mb-1">{{ 'wd.resource.index.search.filters'|trans|capitalize }}</div>
+                <div class="list-group list-group-flush wd-index-search-filter-list">
+                    {% for name, filter in definition.filters %}
+                        {% set filterLabelKey = 'wd.resource.' ~ resourceName ~ '.field.' ~ name %}
+                        <button
+                            type="button"
+                            class="list-group-item list-group-item-action {{ this.draftField == name ? 'active' : '' }}"
+                            data-action="live#action"
+                            data-live-action-param="selectDraftField"
+                            data-live-field-param="{{ name }}"
+                        >
+                            {{ filterLabelKey|trans|capitalize }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-7">
+                {% set draftFilter = this.getDraftFilter() %}
+                {% if draftFilter is not null %}
+                    {% set draftFilterLabelKey = 'wd.resource.' ~ resourceName ~ '.field.' ~ draftFilter.name %}
+                    <div class="small text-uppercase text-muted mb-1">{{ draftFilterLabelKey|trans|capitalize }}</div>
+
+                    <select
+                        class="form-select form-select-sm mb-2"
+                        data-model="draftOperator"
+                    >
+                        {% for operator, operatorLabel in this.getOperatorsFor(draftFilter.type) %}
+                            <option value="{{ operator }}" {{ this.draftOperator == operator ? 'selected' : '' }}>
+                                {{ operatorLabel|trans|capitalize }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    {% if draftFilter.type == 'boolean' %}
+                        <select
+                            class="form-select form-select-sm mb-2"
+                            data-model="draftValue"
+                            data-action="keydown.enter->live#action"
+                            data-live-action-param="addCriterion"
+                        >
+                            <option value="" {{ this.draftValue is null or this.draftValue == '' ? 'selected' : '' }}>{{ 'wd.resource.index.search.choose_value'|trans|capitalize }}</option>
+                            <option value="1" {{ this.draftValue in [true, 'true', '1', 1, 'yes', 'si'] ? 'selected' : '' }}>{{ 'wd.resource.index.search.value.yes'|trans|capitalize }}</option>
+                            <option value="0" {{ this.draftValue in [false, 'false', '0', 0, 'no'] ? 'selected' : '' }}>{{ 'wd.resource.index.search.value.no'|trans|capitalize }}</option>
+                        </select>
+                    {% elseif draftFilter.type in ['enum', 'choice'] %}
+                        <select
+                            class="form-select form-select-sm mb-2"
+                            data-model="draftValue"
+                            data-action="keydown.enter->live#action"
+                            data-live-action-param="addCriterion"
+                        >
+                            <option value="">{{ 'wd.resource.index.search.choose_value'|trans|capitalize }}</option>
+                            {% for option in this.getDraftOptions() %}
+                                {% set optionValue = {'value': option.value, 'label': option.label}|json_encode %}
+                                <option value="{{ optionValue }}" {{ this.draftValue == optionValue ? 'selected' : '' }}>
+                                    {{ option.label|trans|capitalize }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    {% elseif draftFilter.type == 'date_range' %}
+                        <input
+                            type="date"
+                            class="form-control form-control-sm mb-2"
+                            value="{{ this.draftValue }}"
+                            data-model="draftValue"
+                            data-action="keydown.enter->live#action"
+                            data-live-action-param="addCriterion"
+                        >
+                    {% else %}
+                        <input
+                            type="text"
+                            class="form-control form-control-sm mb-2"
+                            value="{{ this.draftValue }}"
+                            data-model="draftValue"
+                            data-action="keydown.enter->live#action"
+                            data-live-action-param="addCriterion"
+                            autofocus
+                        >
+                    {% endif %}
+
+                    <div class="d-flex gap-2">
+                        <button
+                            type="button"
+                            class="btn btn-primary btn-sm flex-grow-1"
+                            data-action="live#action"
+                            data-live-action-param="addCriterion"
+                        >
+                            {{ 'wd.resource.index.search.apply'|trans|capitalize }}
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-outline-secondary btn-sm"
+                            data-action="live#action"
+                            data-live-action-param="clearDraftField"
+                        >
+                            {{ 'wd.resource.index.search.cancel'|trans|capitalize }}
+                        </button>
+                    </div>
+                {% else %}
+                    <p class="text-muted small mb-0">{{ 'wd.resource.index.search.select_filter_hint'|trans|capitalize }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if this.criteria is not empty %}
+            <hr class="my-2">
+            <button
+                type="button"
+                class="btn btn-link btn-sm text-decoration-none p-0"
+                data-action="live#action"
+                data-live-action-param="resetCriteria"
+            >
+                {{ 'wd.resource.index.search.clear_all'|trans|capitalize }}
+            </button>
+        {% endif %}
+    </div>
+</div>

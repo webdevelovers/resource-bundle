@@ -24,6 +24,28 @@ wd:
             actions: azioni
             bulk_confirm: Sei sicuro di voler procedere con l'azione massiva su %count% elementi?
             no_results: nessun risultato
+            search:
+                placeholder: cerca...
+                filters: filtri
+                select_filter_hint: seleziona un filtro per impostarne il valore
+                choose_value: scegli un valore
+                apply: applica
+                cancel: annulla
+                clear_all: rimuovi tutti i filtri
+                remove_filter: rimuovi filtro
+                edit_filter: clicca per modificare questo filtro
+                value:
+                    yes: sì
+                    no: no
+                operator:
+                    contains: contiene
+                    equals: uguale a
+                    not_equals: diverso da
+                    starts_with: inizia con
+                    ends_with: finisce con
+                    in: tra
+                    gte: dal
+                    lte: al
         toolbox:
             attachments:
                 upload_success: caricamento avvenuto con successo

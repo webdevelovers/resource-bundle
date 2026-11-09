@@ -9,6 +9,7 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveArg;
+use Symfony\UX\LiveComponent\Attribute\LiveListener;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\Attribute\PreReRender;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
@@ -28,6 +29,8 @@ use WebDevelovers\ResourceBundle\Index\View\IndexViewFactoryInterface;
 use function array_values;
 use function ceil;
 use function intdiv;
+use function is_array;
+use function json_decode;
 use function max;
 use function min;
 
@@ -104,18 +107,6 @@ final class Table extends AbstractController
 
     #[LiveProp(writable: true, onUpdated: 'applyPagination')]
     public int $lastItemInput = 1;
-
-    #[LiveProp(writable: true)]
-    public string $draftField = '';
-
-    #[LiveProp(writable: true)]
-    public string $draftOperator = 'contains';
-
-    #[LiveProp(writable: true)]
-    public mixed $draftValue = null;
-
-    #[LiveProp(writable: true)]
-    public int $draftVersion = 0;
 
     public function __construct(
         private readonly IndexRegistryInterface $indexRegistry,
@@ -208,63 +199,22 @@ final class Table extends AbstractController
         );
     }
 
-    #[LiveAction]
-    public function addCriterion(): void
+    /**
+     * Reacts to the independent `IndexSearch` live component emitting its
+     * `index_search:changed` event (`emitUp`) whenever the set of active
+     * criteria changes (filter added/removed/cleared). The new criteria are
+     * JSON-encoded by the emitter to keep the event payload a simple scalar.
+     *
+     * @param string $criteria JSON-encoded list of criteria
+     */
+    #[LiveListener('index_search:changed')]
+    public function onSearchCriteriaChanged(#[LiveArg]
+    string $criteria,): void
     {
-        $field = $this->draftField;
-        $operator = $this->draftOperator !== '' ? $this->draftOperator : 'equals';
-        $value = $this->draftValue;
+        $decoded = json_decode($criteria, true);
+        $this->criteria = is_array($decoded) ? array_values($decoded) : [];
 
-        if ($field === '') {
-            return;
-        }
-
-        if (is_string($value) && ($value !== '')) {
-            $decoded = json_decode($value, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded) && isset($decoded['value'])) {
-                $originalValue = $value;
-                $value = $decoded['value'];
-            }
-        }
-
-        $this->criteria[] = [
-            'field' => $field,
-            'operator' => $operator,
-            'value' => $value,
-            'display_value' => $originalValue ?? $value,
-        ];
-
-        $this->draftField = '';
-        $this->draftOperator = 'contains';
-        $this->draftValue = null;
-        ++$this->draftVersion;
-
-        $this->resetPage();
-    }
-
-    #[LiveAction]
-    public function removeCriterion(#[LiveArg]
-    int $index,): void
-    {
-        if (! isset($this->criteria[$index])) {
-            return;
-        }
-
-        unset($this->criteria[$index]);
-        $this->criteria = array_values($this->criteria);
-
-        $this->resetPage();
-    }
-
-    #[LiveAction]
-    public function resetCriteria(): void
-    {
-        $this->criteria = [];
-        $this->draftField = '';
-        $this->draftOperator = 'contains';
-        $this->draftValue = null;
-        ++$this->draftVersion;
-
+        $this->resolveDisplayValues();
         $this->resetPage();
     }
 
